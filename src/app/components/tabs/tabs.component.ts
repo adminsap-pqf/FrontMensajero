@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
+import { ComunService } from '../../../providers/comun/comun';
 
 interface ITabOption {
   id: number;
@@ -59,6 +60,8 @@ export class TabsComponent {
     // private router: Router,
     // DOCS: utilizar NavController para apps
     private navCtrl: NavController,
+    private alertCtrl: AlertController,
+    private comun: ComunService,
   ) {}
 
   handleTrackBy(index: number, item: ITabOption) {
@@ -89,5 +92,27 @@ export class TabsComponent {
         queryParams: { reload: new Date().getTime() },
       },
     ]);
+  }
+
+  /**
+   * @method handleLogout Pide confirmación y cierra la sesión, regresando al login.
+   * **/
+  async handleLogout() {
+    const alert = await this.alertCtrl.create({
+      header: 'Cerrar sesión',
+      message: '¿Seguro que deseas salir?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salir',
+          role: 'destructive',
+          handler: () => {
+            this.comun.logout();
+            this.navCtrl.navigateRoot(['/login']);
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 }

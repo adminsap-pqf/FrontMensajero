@@ -1,3 +1,13 @@
 .title {
   text-align: center;
 }
+
+.salir-button {
+  --color: #d32f2f;
+  --color-selected: #d32f2f;
+
+  ion-icon,
+  ion-label {
+    color: #d32f2f;
+  }
+}

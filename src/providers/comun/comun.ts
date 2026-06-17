@@ -62,6 +62,18 @@ export class ComunService {
     this.Usuario = usuario;
   }
 
+  /**
+   * @method logout Limpia los datos de la sesión en memoria al cerrar sesión.
+   */
+  logout(): void {
+    this.Usuario = null;
+    this.usuario = '';
+    this.moverAcierre = false;
+    this.RefreshList = false;
+    this.RefreshListVisitas = false;
+    this.informacion = {};
+  }
+
   getUsuario(): any {
     return this.Usuario;
   }

@@ -7,6 +7,7 @@
 // export const URL = 'http://192.168.2.41:8081/ProquifaNet/'; //Desarrollo 2024
 // export const URL = 'https://192.168.2.41:8443/ProquifaNet/';
 
-export const URL = "https://pqnetangular.ryndem.mx/ProquifaNet/"; // PROD
+export const URL = "https://pqnetangular.ryndem.mx/ProquifaNet/"; // PRODUCCION
+//export const URL = "http://localhost:8081/api/"; // DESARROLLO
 //export const URL ='http://172.24.20.12:8080/ProquifaNet/'
 //export const URL = 'http://www.proquifaconnect.mx:8080/ProquifaNet/';
