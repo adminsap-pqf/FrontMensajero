@@ -8,7 +8,7 @@ import { URL } from '../config/config.services'; // Trae las ips
   providedIn: 'root',
 })
 export class PendientesProvider {
-  key: string = 'AIzaSyCjtEyMAWq3wRg6sN2z4bdb7YDBfIvyaLc';
+  key: string = 'AIzaSyDKg6XQk6PFAw7NSVetS3x5tqrcx8SnCZQ';
   private elementosAColectar: string = `${URL}consultarPendientesDeMensajeroPL`;
   private obtenerPersonalAlmacen: string = `${URL}obtenerPersonalAlmacenCliente`;
   private actualizarPersonalAlmacen: string = `${URL}actualizarPersonalAlmacenCliente`;
