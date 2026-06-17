@@ -145,17 +145,29 @@ export class MapaPage {
     });
   }
 
-  async ionViewDidLoad() {
-    console.log('Mensaje en consola Entró a ionViewDidLoad');
+  async cargarMapa() {
+    console.log('Mensaje en consola Entró a cargarMapa');
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
       this.pendientes = JSON.parse(params.pendientes);
       console.log('Mensaje en consola Pendientes recibidos:', this.pendientes);
       console.log('Mensaje en consola Pendientes recibidos:', this.pendientes);
 
       // Obtener la ubicación actual
-      const position = await Geolocation.getCurrentPosition();
-      this.Mylat = position.coords.latitude;
-      this.Mylong = position.coords.longitude;
+      try {
+        const position = await Geolocation.getCurrentPosition();
+        this.Mylat = position.coords.latitude;
+        this.Mylong = position.coords.longitude;
+      } catch (error) {
+        // Si no hay GPS o permiso de ubicación (p. ej. en el navegador de
+        // escritorio o sin señal), centramos el mapa en Proquifa para que
+        // igual se dibuje en lugar de quedarse en blanco.
+        console.error(
+          'Mensaje en consola No se pudo obtener la ubicación, usando ubicación por defecto:',
+          error,
+        );
+        this.Mylat = this._proquifa[0];
+        this.Mylong = this._proquifa[1];
+      }
 
       console.log('Latitud:', this.Mylat);
       console.log('Longitud:', this.Mylong);
@@ -168,6 +180,10 @@ export class MapaPage {
 
   ionViewDidEnter() {
     console.log('Mensaje en consola Entró a ionViewDidEnter');
+    // En Ionic 6 el evento ionViewDidLoad (de Ionic 3) ya no se dispara,
+    // por eso el mapa nunca se inicializaba al entrar al pendiente.
+    // Lo cargamos aquí, que sí es un evento válido en Ionic 6.
+    this.cargarMapa();
     this.validarUbicacionProquifa();
     if (this.isProquifa) {
       //this.dist_time(this._proquifa, [this.items[0].latitud, this.items[0].longitud])
