@@ -1,0 +1,10 @@
+{
+  "name": "AppMensajero",
+  "integrations": {
+    "capacitor": {}
+  },
+  "features": {
+    "disableCache": true
+  },
+  "type": "angular"
+}

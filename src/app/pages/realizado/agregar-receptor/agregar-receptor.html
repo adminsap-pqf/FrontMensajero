@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons style="width: 30px" slot="start">
+      <ion-back-button color="primary"></ion-back-button>
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center"
+      >Nuevo Receptor</ion-title
+    >
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="principal">
+  <ion-list style="margin-top: 10px; height: 330px">
+    <ion-input
+      [(ngModel)]="nombre"
+      type="text"
+      placeholder="Nombre"
+      value=""
+    ></ion-input>
+    <ion-input
+      [(ngModel)]="apellido"
+      type="text"
+      placeholder="Apellido"
+      value=""
+    ></ion-input>
+    <ion-input
+      [(ngModel)]="puesto"
+      type="text"
+      placeholder="Puesto"
+      value=""
+    ></ion-input>
+  </ion-list>
+
+  <div class="btn">
+    <ion-button expand="full" strong="true" (click)="receptor()">Guardar</ion-button>
+  </div>
+  <div class="btn2">
+    <ion-button expand="full" strong="true" (click)="cancelar()">Cancelar</ion-button>
+  </div>
+</ion-content>
+
+<!--<div [ngClass]="' '+(openbottom?'cortina':'hide-cortina')" (click)="esconder()"></div>
+<div [ngClass]="'menudesp '+(openbottom?'animate-bottom':'hide-bottom')" (click)="esconder()">
+  <div class="content">
+    <div class="costumers">
+      <div class="texto">
+        <div class="imgs"> <img src="../../assets/imgs/aviso.svg" width='28' height="28">  </div>
+        <div>¿Desea guardar receptor?</div>
+      </div>
+      <div class="btn"><button ion-button full outline color="white" (click)="receptor()"> <span> Aceptar </span></button></div>
+    </div>
+    <div class="cerrar"> <button ion-button block color="white" (click)="esconder()"> <span> Cancelar </span></button> </div>
+  </div>
+</div>-->

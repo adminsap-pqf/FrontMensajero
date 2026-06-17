@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons slot="start">
+      <ion-back-button
+        color="primary"
+        defaultHref="/tabs/cerrados"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title style="text-align: center" color="primary"
+    >{{ items[0]?.empresa || '' }}
+    </ion-title
+    >
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="todo">
+    <div class="contenedor">
+      <div
+        class="ion-padding"
+        *ngFor="let d of data ; let i =index"
+        style="border-radius: 4px; margin-bottom: 10px; background: #ffffff"
+      >
+        <div class="head" (click)="toggleDetails(d,i)">
+          <div class="uno">
+            <div class="titulo">#{{ i + 1 }} · {{ d.title }}</div>
+            <div class="total">
+              {{ d.eventos }}
+              <span *ngIf="d.title == 'Entrega'"> Packing List </span>
+              <span *ngIf="d.title == 'Revision'"> Revision</span>
+              <span *ngIf="d.title == 'Entrega especial'"> Entregas</span>
+              <span *ngIf="d.title == 'Cobro'"> Cobros</span>
+              <span *ngIf="d.title == 'Recolección'"> Recolección</span>
+            </div>
+          </div>
+          <div class="dos" style="margin-right: -9px">
+            <ion-icon color="primary" item-right [name]="d.icon"></ion-icon>
+          </div>
+        </div>
+        <div *ngIf="d.showDetails" style="margin-top: 10px">
+          <div *ngFor="let a of d.details ; let x =index" class="pklist">
+            <div class="titulos">
+              <div>
+                <div class="green-circle"></div>
+                <span>#{{ x + 1 }}&nbsp;·&nbsp;</span
+                ><span [ngClass]="codigoValido[d.title][x]?'verde':''"
+              >{{ a.folioEvento }}</span
+              >
+              </div>
+              <div class="imagen">
+                <label
+                  [style.color]="a.realizadoTxt == 'No realizada'? '#952936': a.realizadoTxt == 'Parcial'? '#DACA00': '#25AE18' "
+                >{{ a.realizadoTxt }}</label
+                >
+              </div>
+            </div>
+            <div *ngIf="d.title == 'Entrega'" class="subItem">
+              <div
+                *ngFor="let item of a.folioProducto.split(',') ; let i2 =index"
+              >
+                <div class="subUno">
+                  <span [ngClass]="codigoValido[d.title][i][i2]?'verde':''"
+                  >#{{ i2 + 1 }} · {{ item }}</span
+                  >
+                </div>
+                <div class="subDos"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,46 @@
+// Importación de los temas base de Ionic
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+
+// Importar las variables de Ionic
+@import "@ionic/angular/css/display.css";
+@import "@ionic/angular/css/flex-utils.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+
+// Definición de colores personalizados
+$colors: (
+  primary: #008997,
+  secondary: #008997,
+  danger: #f53d3d,
+  success: #3d96f5,
+  light: #f4f4f4,
+  dark: #222,
+  white: #ffffff,
+
+  cabecera: (
+    base: #ffffff,
+    contrast: #008997,
+  ),
+);
+
+// Variables adicionales
+$left: 16px;
+$right: 16px;
+$orange: rgb(233, 146, 16);
+$verde: #008997;
+$correct: #91be5f;
+$incorrect: #d0021b;
+
+:root {
+  --ion-color-primary: #008997;
+  --ion-color-secondary: #008997;
+  --ion-color-danger: #f53d3d;
+  --ion-color-success: #3d96f5;
+  --ion-color-light: #f4f4f4;
+  --ion-color-dark: #222;
+  --ion-color-white: #ffffff;
+}

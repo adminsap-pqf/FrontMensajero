@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons slot="start">
+      <ion-back-button
+        color="primary"
+        defaultHref="/tabs/colectar"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title style="text-align: center" color="primary">{{
+      nombreClientes
+    }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="todo">
+    <div class="contenedor">
+      <div
+        class="ion-padding"
+        *ngFor="let items of arrayAux; let i = index"
+        style="border-radius: 4px; margin-bottom: 10px; background: #ffffff"
+        (click)="goto(items)"
+      >
+        <div class="head">
+          <div class="uno">
+            <div class="titulo">#{{ i + 1 }} · {{ items.evento }}</div>
+            <div class="total" *ngIf="items.evento == 'Entrega'">
+              {{ items.eventos }} Packing List
+            </div>
+            <div class="total" *ngIf="items.evento == 'Revision'">
+              {{ items.eventos }} Revision
+            </div>
+            <div class="total" *ngIf="items.evento == 'Entrega especial'">
+              {{ items.eventos }} Entregas
+            </div>
+            <div class="total" *ngIf="items.evento == 'Cobro'">
+              {{ items.eventos }} Cobros
+            </div>
+            <div class="total" *ngIf="items.evento == 'Recolección'">
+              {{ items.eventos }} Recolección
+            </div>
+          </div>
+          <div class="dos">
+            <div class="arrow">
+              <img
+                src="./assets/img/imgs/flecha_ingresar.svg"
+                width="10"
+                height="10"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

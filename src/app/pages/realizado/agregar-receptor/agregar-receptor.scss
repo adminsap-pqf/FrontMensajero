@@ -1,0 +1,167 @@
+@use "src/theme/variables" as v;
+.principal {
+  overflow: scroll;
+}
+
+.btn {
+  ion-button {
+    height: 100%;
+    --background: #ffffff;
+    --color: #25ae18;
+    --box-shadow: none;
+    font-size: 14px;
+
+  }
+}
+.btn2 {
+  ion-button {
+    height: 100%;
+    --color: #d0021b;
+    --background: #ffffff;
+    --box-shadow: none;
+    margin-top: 20px;
+  }
+}
+
+.folio-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: v.$verde;
+  font-weight: bold;
+  height: 8vh;
+  font-size: 16px;
+  border-bottom: 1px solid #eaeef3;
+}
+
+.options-receptor {
+  width: 100%;
+  height: 10vh;
+  padding-left: v.$left;
+  padding-right: v.$right + 5;
+  border-bottom: 1px solid #eaeef3;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.verde {
+  color: v.$verde;
+}
+
+.active {
+  color: #424242;
+}
+
+.button-md {
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+}
+
+ion-input {
+  border-bottom: 1px solid #eaeef3;
+  margin: 0px 20px;
+  width: 90%;
+  height: 60px;
+  input {
+    text-align: center;
+    font-size: 16px;
+    ::-webkit-input-placeholder {
+      text-align: center;
+      font-size: 16px;
+    }
+  }
+}
+
+.text-input {
+  margin-top: 25px;
+  margin-bottom: 0px;
+}
+
+.menudesp {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 35%;
+  width: 95%;
+  background: transparent;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 1s;
+  border-radius: 10%;
+  margin-left: 10px;
+  margin-bottom: 20px;
+  .content {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+
+    .costumers {
+      // padding-left: v.$left;
+      // padding-right: v.$right;
+      width: 100%;
+      height: 60%;
+      align-items: center;
+      background: white;
+      border-bottom: 1px solid #eaeef3;
+      border-radius: 10px;
+
+      .texto {
+        height: 60%;
+        display: flex;
+        justify-content: center;
+        span {
+          color: #008894;
+        }
+        .imgs {
+          margin-top: 35px;
+          width: 5%;
+          height: 100%;
+          margin-right: 15px;
+          img {
+            width: 28px;
+            height: 28px;
+          }
+        }
+        div {
+          margin-top: 40px;
+          height: 100%;
+        }
+      }
+      .btn {
+        width: 100%;
+        height: 10%;
+        .button-md-white {
+          color: #008894;
+          background-color: #ffffff;
+        }
+        .button-outline-md-white {
+          border-color: transparent;
+          color: #008997;
+          background-color: transparent;
+        }
+        .button-outline-ios-white {
+          border-color: #ffffff;
+          color: #008997;
+          background-color: transparent;
+        }
+        .button-ios-white {
+          color: #008894;
+          background-color: #ffffff;
+        }
+      }
+    }
+
+    .cerrar {
+      width: 100%;
+      height: 10vh;
+      border-radius: 30%;
+      span {
+        color: red;
+      }
+    }
+  }
+}

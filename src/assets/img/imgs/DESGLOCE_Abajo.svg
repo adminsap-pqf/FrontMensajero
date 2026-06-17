@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="10px" viewBox="0 0 24 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>DESGLOCE_ARRIBA</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="DESGLOCE_ARRIBA" fill="#268A95">
+            <path d="M12,10 C11.6865447,10 11.3730894,9.90937142 11.1055803,9.72811425 L0.636989964,2.61955527 C-0.0491402133,2.15291448 -0.205357352,1.24952105 0.287798713,0.600658959 C0.782996832,-0.0472389976 1.73867815,-0.192823211 2.42582936,0.270925178 L12,6.77207982 L21.5741706,0.270925178 C22.2623429,-0.192823211 23.2180242,-0.0472389976 23.7122013,0.600658959 C24.2053574,1.24952105 24.0491402,2.15291448 23.36301,2.61955527 L12.8944197,9.72811425 C12.6269106,9.90937142 12.3134553,10 12,10" id="Fill-1"></path>
+        </g>
+    </g>
+</svg>

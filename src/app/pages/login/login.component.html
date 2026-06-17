@@ -1,0 +1,52 @@
+<ion-content padding>
+  <ion-row
+    style="
+      height: 32vh;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      background: transparent;
+      margin-top: 9.41vh;
+    "
+  >
+    <ion-col
+      style="display: flex; align-content: center; justify-content: center"
+    >
+      <img src="assets/img/imgs/logo_1.svg" width="60%" alt="" />
+    </ion-col>
+  </ion-row>
+  <ion-row style="margin-top: 4.3vh">
+    <ion-col>
+      <ion-item>
+        <ion-input
+          [(ngModel)]="user"
+          type="text"
+          placeholder="Usuario"
+          style="text-align: center"
+        ></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col>
+      <ion-item>
+        <ion-input
+          (keydown.enter)="doLogin()"
+          [(ngModel)]="password"
+          type="password"
+          placeholder="Contraseña"
+          style="text-align: center"
+        ></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row style="height: 36px; margin-top: 80px">
+    <ion-col style="display: flex; justify-content: center">
+      <ion-button color="primary" expand="block" style="font-size: 18px; text-transform: uppercase; font-weight: 700; width: 162px; height: 36px;" (click)="doLogin()">
+        Entrar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

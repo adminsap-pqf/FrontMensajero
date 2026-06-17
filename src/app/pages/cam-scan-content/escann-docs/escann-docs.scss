@@ -1,0 +1,188 @@
+@use "src/theme/variables" as v;
+
+.clave-ctn {
+  width: 100%;
+  height: 10vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: v.$verde;
+  padding-left: v.$left;
+  padding-right: v.$right;
+  border-bottom: 0.5px solid #42424282;
+}
+
+.editable {
+  border-radius: 50%;
+  position: absolute;
+  width: 30px;
+  background: #d0021b;
+  height: 30px;
+  right: 65px;
+  box-shadow: 0.2px 0.5px 6px 0.0009px black;
+  top: 20px;
+  color: white;
+  font-size: 21px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content-imgs {
+  width: 100%;
+  height: 80%;
+  overflow-y: scroll;
+  background: #eceef0;
+  padding-top: 5px;
+}
+
+.options-content {
+  // padding-left: v.$left;
+  // padding-right: v.$right;
+  width: 100%;
+  height: 20%;
+  display: flex;
+  align-items: center;
+  background: #eceef0;
+  .button-md-white {
+    color: #25ae18;
+    background-color: #ffffff;
+  }
+
+  ion-button{
+    width: 100%;
+    height: 100%;
+    --background: white;
+    --color: #25ae18;
+    --box-shadow: none;
+  }
+}
+.total {
+  justify-content: center;
+  text-align: center;
+  background: #eceef0;
+
+  span {
+    color: #008894;
+    font-size: 14px;
+  }
+}
+
+.cortinaEC {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100vh;
+  z-index: 600;
+  background: rgba(21, 21, 21, 0.6);
+  animation: opac 0.3s;
+}
+
+.cortina-hideEC {
+  display: none;
+  z-index: -1 !important;
+}
+
+.hide-bottomEC {
+  bottom: -100vh;
+  opacity: 0;
+  z-index: -1 !important;
+  transition-duration: 0.3s;
+  animation: gotodown 0.3s;
+}
+
+.animate-bottomEC {
+  animation: gotoup 0.1s;
+}
+
+.menudespEC {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 45%;
+  width: 95%;
+  background: transparent;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 2s;
+  border-radius: 20%;
+  margin-left: 10px;
+  margin-bottom: 50px;
+  & > .content {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    & > .costumers {
+      width: 100%;
+      height: 49%;
+      background: white;
+      overflow: auto;
+      border-bottom-right-radius: 10px;
+      border-bottom-left-radius: 10px;
+      border-top-right-radius: 10px;
+      border-top-left-radius: 10px;
+
+      & > .entregaRevision {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 20px 0px 20px;
+        width: 90%;
+        background: #ffffff;
+        padding: 0px 5px 20px 5px;
+        min-height: 60px;
+        box-sizing: border-box;
+
+        & > .mark-receptor {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+
+          span {
+            margin-left: 5px;
+          }
+        }
+      }
+    }
+  }
+}
+.btn,
+.options-content {
+  width: 100%;
+  height: 49px;
+  margin-bottom: 20px;
+
+  button {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    color: #25ae18;
+    font-size: 14px;
+    font-weight: bold;
+  }
+}
+ion-button.camera-btn {
+  height: 100%;
+  background-color: transparent;
+}
+
+.cerrar {
+  button {
+    width: 100%;
+    padding: 1vh;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    span {
+      color: #d0021b;
+    }
+  }
+}

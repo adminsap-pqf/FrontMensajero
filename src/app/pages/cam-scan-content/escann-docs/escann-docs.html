@@ -1,0 +1,121 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons style="width: 30px" slot="start">
+      <ion-back-button color="primary"></ion-back-button>
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center">
+      Documentos
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button shape="round" class="camera-btn" (click)="openCamera()">
+        <img src="assets/img/imgs2/camera .svg" alt="" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="Documentos.length>0" class="content-imgs">
+    <div
+      *ngFor="let img of Documentos;let i= index  "
+      style="
+        height: 430px;
+        display: flex;
+        flex-direction: row;
+        overflow-y: hidden;
+        justify-content: center;
+        position: relative;
+        align-items: center;
+      "
+    >
+      <div class="editable" (click)="borrar(i)">
+        <ion-icon md="remove-outline"></ion-icon>
+      </div>
+      <div [id]="img.iddiv" style="background: transparent">
+        <img [id]="img.idimg" width="260px;" [src]="img.ruta" />
+      </div>
+    </div>
+  </div>
+  <div *ngIf="Documentos.length==0" class="content-imgs">
+    <div
+      style="
+        height: 430px;
+        display: flex;
+        flex-direction: row;
+        overflow-y: hidden;
+        justify-content: center;
+        position: relative;
+        align-items: center;
+      "
+    >
+      <div id="imgiddiv" style="background: transparent">
+        <img
+          id="Sin"
+          width="260px;"
+          src=" https://via.placeholder.com/350x500?text=No hay Imágenes"
+        />
+      </div>
+    </div>
+  </div>
+  <div class="total ion-padding">
+    <span># {{ totalFotos }} foto<span *ngIf="totalFotos>1">s</span> </span>
+  </div>
+  <div class="options-content">
+    <ion-button expand="full" class="btnAccept" strong="true" (click)="recibeEyR && !facturaORemision ? mostrar() : pdf()">
+      Aceptar
+    </ion-button>
+  </div>
+</ion-content>
+
+<div class="cortinaEC" *ngIf="openbottom" (click)="esconder()"></div>
+<div [ngClass]="'menudespEC '+(openbottom?'animate-bottomEC':'hide-bottomEC')">
+  <div class="content">
+    <div class="costumers">
+      <div class="entregaRevision">
+        <div class="mark-receptor" (click)="selectEntrega()">
+          <img
+            width="19px"
+            *ngIf="conforme"
+            class="g-animate-opacity"
+            src="./assets/img/imgs/RADIO_ACTIVO.svg"
+            alt=""
+          />
+          <img
+            width="19px"
+            *ngIf="!conforme"
+            class="g-animate-zoom"
+            src="./assets/img/imgs/RADIO.svg"
+            alt=""
+          />
+          <span>Entrega</span>
+        </div>
+
+        <div class="mark-receptor" (click)="selectERevision()">
+          <img
+            width="19px"
+            *ngIf="!conforme"
+            class="g-animate-opacity"
+            src="./assets/img/imgs/RADIO_ACTIVO.svg"
+            alt=""
+          />
+          <img
+            width="19px"
+            *ngIf="conforme"
+            class="g-animate-zoom"
+            src="./assets/img/imgs/RADIO.svg"
+            alt=""
+          />
+          <span>Entrega y Revisión</span>
+        </div>
+      </div>
+      <div class="btn">
+        <button (click)="pdf()">Aceptar</button>
+      </div>
+    </div>
+    <div class="cerrar">
+      <button (click)="esconder()">
+        <span> Cancelar </span>
+      </button>
+    </div>
+  </div>
+</div>

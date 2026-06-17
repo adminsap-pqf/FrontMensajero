@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-tab-bar color="cabecera">
+    <ion-title color="primary">Pendientes</ion-title>
+  </ion-tab-bar>
+</ion-header>
+
+<ion-content>
+  <div class="lst-content">
+    <div class="contenedorElement">
+      <div
+        class="element"
+        *ngFor="let item of arrayAux; let i = index"
+        (click)="entrarAlMapa(i)"
+      >
+        <div class="state">
+          <div
+            class="green-circle"
+            [style.background]="
+              item.inaplasables > 0
+                ? '#952936'
+                : item.urgentes > 0
+                  ? '#DACA00'
+                  : '#25AE18'
+            "
+          ></div>
+        </div>
+        <div class="description">
+          <div class="name">#{{ i + 1 }}· {{ item.empresa }}</div>
+          <div class="subname" style="font-size: 10px">
+            <div *ngIf="item.horario.diario">
+              Dia: De {{ item.horario.diaDe1 }} a {{ item.horario.diaA1 }} - De
+              {{ item.horario.diaDe2 }} a {{ item.horario.diaA2 }}
+            </div>
+            <div *ngIf="!item.horario.diario">
+              <div *ngIf="diaSemana == 1">
+                <div *ngIf="item.horario.lunes">
+                  Lu: De {{ item.horario.luDe1 }} a {{ item.horario.luA1 }} - De
+                  {{ item.horario.luDe2 }} a {{ item.horario.luA2 }}
+                </div>
+                <div *ngIf="!item.horario.lunes">Lu: N/A</div>
+              </div>
+              <div *ngIf="diaSemana == 2">
+                <div *ngIf="item.horario.martes">
+                  Ma: De {{ item.horario.maDe1 }} a {{ item.horario.maA1 }} - De
+                  {{ item.horario.maDe2 }} a {{ item.horario.maA2 }}
+                </div>
+                <div *ngIf="!item.horario.martes">Ma: N/A</div>
+              </div>
+              <div *ngIf="diaSemana == 3">
+                <div *ngIf="item.horario.miercoles">
+                  Mi: De {{ item.horario.miDe1 }} a {{ item.horario.miA1 }} - De
+                  {{ item.horario.miDe2 }} a {{ item.horario.miA2 }}
+                </div>
+                <div *ngIf="!item.horario.miercoles">Mi: N/A</div>
+              </div>
+              <div *ngIf="diaSemana == 4">
+                <div *ngIf="item.horario.jueves">
+                  Ju: De {{ item.horario.juDe1 }} a {{ item.horario.juA1 }} - De
+                  {{ item.horario.juDe2 }} a {{ item.horario.juA2 }}
+                </div>
+                <div *ngIf="!item.horario.jueves">Ju: N/A</div>
+              </div>
+              <div *ngIf="diaSemana == 5">
+                <div *ngIf="item.horario.viernes">
+                  Vi: De {{ item.horario.viDe1 }} a {{ item.horario.viA1 }} - De
+                  {{ item.horario.viDe2 }} a {{ item.horario.viA2 }}
+                </div>
+                <div *ngIf="!item.horario.viernes">Vi: N/A</div>
+              </div>
+            </div>
+          </div>
+          <!--<div class="subname">
+            <div *ngIf="item.eventos==1">
+              {{item.eventos}} Evento:
+              <span class="red">{{item.inaplasables}}I</span> ·
+              <span class="orange">{{item.urgentes}}U</span> ·
+              <span class="green">{{item.normales}}N</span>
+            </div>
+            <div *ngIf="item.eventos!=1">
+              {{item.eventos}} Eventos:
+              <span class="red">{{item.inaplasables}}I</span> ·
+              <span class="orange">{{item.urgentes}}U</span> ·
+              <span class="green">{{item.normales}}N</span>
+            </div>
+          </div>-->
+          <div class="address">
+            <span> {{ item.ruta }} </span>
+          </div>
+        </div>
+        <div class="arrow">
+          <img src="./assets/img/imgs/flecha_ingresar.svg" />
+        </div>
+      </div>
+    </div>
+    <div class="total">
+      <span> # {{ totalPendientes }} Pendientes</span>
+    </div>
+  </div>
+</ion-content>

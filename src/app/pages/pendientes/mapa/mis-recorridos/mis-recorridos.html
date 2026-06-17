@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons slot="start">
+      <ion-button style="color: #d0021b" (click)="cerrarModal()"
+        >Cancelar</ion-button
+      >
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center"
+      >Mis recorridos</ion-title
+    >
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item
+      *ngFor="let item of opciones; let i = index"
+      (click)="cerrarModal(item)"
+    >
+      <ion-label>{{ i + 1 }} - {{item?.fecha}}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="18px" viewBox="0 0 17 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.3 (57544) - http://www.bohemiancoding.com/sketch -->
+    <title>back-btn</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Contra_recibo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="pendiente2" transform="translate(-20.000000, -45.000000)" fill="#7A7C8F" fill-rule="nonzero">
+            <path d="M24.7316463,52.8686292 L36.3539105,52.8686292 L36.3539105,55.1313708 L24.7316463,55.1313708 L30.5427784,60.9425029 L29,62.4852814 L20.5147186,54 L29,45.5147186 L30.5427784,47.0574971 L24.7316463,52.8686292 Z" id="back-btn"></path>
+        </g>
+    </g>
+</svg>

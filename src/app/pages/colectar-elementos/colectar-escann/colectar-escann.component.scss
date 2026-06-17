@@ -1,0 +1,142 @@
+.nomb {
+  font-size: 14px;
+}
+.subname {
+  font-size: 10px;
+  span {
+    color: #000000;
+  }
+}
+
+.todo {
+  width: 100%;
+  height: 100%;
+  background: #eceef0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .btn {
+    align-self: center;
+    margin-bottom: 20px;
+    .button-md-white {
+      color: #25ae18;
+      background-color: #ffffff;
+      font-weight: bold;
+    }
+    .button-outline-md-white {
+      border-color: transparent;
+      color: #25ae18;
+      background-color: transparent;
+      font-weight: bold;
+    }
+    .button-outline-ios-white {
+      border-color: #ffffff;
+      color: #25ae18;
+      background-color: transparent;
+      font-weight: bold;
+    }
+    .button-ios-white {
+      color: #25ae18;
+      background-color: #ffffff;
+      font-weight: bold;
+    }
+  }
+}
+.contenedor {
+  width: 90%;
+  height: 84%;
+  margin: 20px 20px 5px 20px;
+  overflow: auto;
+}
+.head {
+  width: 100%;
+  display: flex;
+  background: #ffffff;
+  padding: 13px 20px;
+  margin-bottom: 1px;
+  border-radius: 4px 4px 0px 0px;
+  .uno {
+    width: 75%;
+    .titulo {
+      font-size: 14px;
+    }
+    .titulo1 {
+      color: #008894;
+      font-size: 14px;
+    }
+  }
+  .dos {
+    width: 25%;
+    color: #008894;
+    font-size: 12px;
+    text-align: right;
+  }
+}
+
+.subItem {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  width: 100%;
+  background: #ffffff;
+  padding-bottom: 25px;
+  border-radius: 0px 0px 4px 4px;
+  & > div {
+    padding: 8px 0px;
+    margin: 0px 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-bottom: 1px solid #eaeef3;
+    & > .subUno {
+      & > .verde {
+        color: #008894;
+      }
+    }
+  }
+}
+
+.button-md {
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  color: #25ae18 !important;
+}
+
+.btn {
+  width: 100%;
+  height: 49px;
+  margin-bottom: 20px;
+
+  ion-button.custom-button {
+    --background: #ffffff;
+    --color: #25ae18;
+    --font-size: 14px;
+    --box-shadow: none;
+    height: 100%;
+
+  }
+
+  ion-button.button-outline-md-white {
+    --border-color: transparent;
+    --background: transparent;
+    --color: #25ae18;
+    font-weight: bold;
+  }
+
+  ion-button.button-outline-ios-white {
+    --border-color: #ffffff;
+    --background: transparent;
+    --color: #25ae18;
+    font-weight: bold;
+  }
+
+  ion-button.button-ios-white {
+    --background: #ffffff;
+    --color: #25ae18;
+    font-weight: bold;
+  }
+}
+

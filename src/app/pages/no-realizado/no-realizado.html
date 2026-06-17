@@ -1,0 +1,173 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons style="width: 30px" slot="start">
+      <ion-back-button color="primary"></ion-back-button>
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center"
+      >{{ noRealizados[0]?.empresa || '' }}
+      <div class="titulos"><span> No realizado </span></div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="todo" *ngIf="showLista">
+    <div class="contenido">
+      <div *ngFor="let item of noRealizados; let iT =index" class="content">
+        <div
+          class="unos"
+          (click)="item.evento != 'Entrega'? abrirRazones(iT,0) :''"
+        >
+          <label
+            *ngIf="item.evento != 'Entrega'"
+            [ngClass]="i2==undefined && codigoValido[iT]?'verde':''"
+          >
+            <span># {{ iT + 1 }} ·</span> {{ item.folioEvento }}</label
+          >
+          <label *ngIf="item.evento == 'Entrega'">
+            <span># {{ iT + 1 }} ·</span> {{ item.folioDocumento }}</label
+          >
+          <span *ngIf="item.evento == 'Entrega'"
+            >{{ item.folioProducto.split(',').length }} Folios
+          </span>
+        </div>
+        <div class="dos" *ngIf="item.evento == 'Entrega'">
+          <div
+            *ngFor="let item2 of item.folioProducto.split(','); let iT2 =index"
+            class="content2"
+            (click)="abrirRazones(iT,iT2)"
+          >
+            <label [ngClass]="codigoValido[iT][iT2]?'verde':''">
+              <span># {{ iT2 + 1 }} ·</span> Folio {{ item2 }}</label
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btn">
+      <ion-button expand="full" strong="true"  (click)="finalizado()"> FINALIZAR</ion-button>
+
+    </div>
+  </div>
+
+  <div *ngIf="showRazon" class="razon">
+    <div class="titulo">
+      <div style="height: 10px"></div>
+      <label>Razón</label>
+    </div>
+    <div
+      *ngFor="let razon of razones; let iSR = index"
+      class="receptor-item"
+      (click)="AbrirJustificacion(razon.nombre)"
+    >
+      <div class="mark-receptor">
+        <img
+          *ngIf="(i2==undefined && justificaciones[i].razon==razon.nombre) || (i2!=undefined && justificaciones[i][i2].razon==razon.nombre)"
+          class="g-animate-opacity"
+          src="assets/img/imgs/RADIO_ACTIVO.svg"
+          alt=""
+        />
+        <img
+          *ngIf="(i2==undefined && justificaciones[i].razon!=razon.nombre) || (i2!=undefined && justificaciones[i][i2].razon!=razon.nombre)"
+          src="assets/img/imgs/RADIO.svg"
+          alt=""
+        />
+      </div>
+      <div class="info-receptor">
+        <p class="name">{{ razon.nombre }}</p>
+        <p class="area">{{ razon.desc }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showDesc" class="descrip">
+    <div class="titulo">
+      <div style="height: 10px"></div>
+      <label>Justificación</label>
+    </div>
+    <div style="height: 83.5%">
+      <div class="area" style="margin: 0px 5%">
+        <textarea
+          placeholder="Escribe Justificación"
+          [(ngModel)]="txtAux"
+          (ngModelChange)="txtTextArea($event)"
+        ></textarea>
+      </div>
+    </div>
+    <div
+      class="btn2"
+      *ngIf="(i2==undefined && justificaciones[i].justificacion=='') || (i2!=undefined && justificaciones[i][i2].justificacion=='')"
+    >
+      <button (click)="cancelar()">Cancelar</button>
+    </div>
+    <div
+      class="btn"
+      *ngIf="(i2==undefined && justificaciones[i].justificacion!='') || (i2!=undefined && justificaciones[i][i2].justificacion!='')"
+    >
+      <button type="submit" (click)="aceptar()">Aceptar</button>
+    </div>
+  </div>
+
+  <!--<div class="todo">
+    <div *ngIf="showLista">
+      <div *ngFor="let item of pakinglist ; let i =index" class="lista">
+        <div class="uno">
+          <label> <span># {{ i+1 }} ·</span> {{ item.clave}}</label>
+          <span>{{ totalFolio}} Folios </span>
+        </div>
+        <div class="dos" *ngFor="let a of item.pendientes; let i =index" (click)="abrirRazones()">
+          <label> <span># {{ i+1 }} ·</span> {{ a.folio}}</label>
+        </div>
+      </div>
+
+      <div class="btn">
+        <button ion-button full color="white"> FINALIZAR</button>
+      </div>
+
+    </div>
+
+    <div *ngIf="showRazon" class="razon">
+      <div class="titulo">
+        <div style="height: 10px;"></div>
+        <label>Razón</label>
+      </div>
+
+      <div *ngFor="let razon of razones; let i =index" class="receptor-item" (click)="AbrirJustificacion()">
+        <div class="mark-receptor">
+          <img *ngIf="i==reasonSelected" class="g-animate-opacity" src="./assets/imgs/RADIO_ACTIVO.svg" alt="">
+          <img *ngIf="i!=reasonSelected" src="./assets/imgs/RADIO.svg" alt="">
+        </div>
+        <div class="info-receptor">
+          <p class="name">{{razon.nombre}}</p>
+          <p class="area">{{razon.desc}}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showDesc" class="descrip">
+
+      <div class="titulo">
+        <div style="height: 10px;"></div>
+
+        <label>Justificación</label>
+
+      </div>
+
+      <form (ngSubmit)="logForm()" [formGroup]="todo">
+        <div class="area">
+          <ion-item>
+            <ion-textarea formControlName="description" placeholder=". . . . . . .  "></ion-textarea>
+          </ion-item>
+        </div>
+        <div class="btn2" *ngIf="write">
+          <button ion-button full color="white"> Cancelar</button>
+        </div>
+        <div class="btn" *ngIf="write">
+          <button ion-button full color="white" type="submit"> Aceptar</button>
+        </div>
+      </form>
+
+    </div>
+
+  </div>-->
+</ion-content>

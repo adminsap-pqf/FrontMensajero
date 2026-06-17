@@ -1,0 +1,303 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+@import "src/theme/variables";
+
+.alert-md .alert-title {
+  font-size: 22px;
+
+  display: flex;
+  justify-content: center;
+}
+
+.mini-header-real {
+  margin-left: 18%;
+  font-size: 14px;
+  color: $correct;
+}
+.mini-header {
+  margin-left: 17%;
+  font-size: 14px;
+  color: $incorrect;
+}
+
+.g-spin {
+  animation: w3-spin 0.2s linear;
+}
+@keyframes w3-spin {
+  0% {
+    transform: rotate(0deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(359deg) scale(1);
+  }
+}
+.g-animate-fading {
+  animation: fading 10s infinite;
+}
+@keyframes fading {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.g-animate-opacity {
+  animation: opaci 0.7s;
+}
+@keyframes opaci {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.g-animate-top {
+  position: relative;
+  animation: animatetop 0.4s;
+}
+@keyframes animatetop {
+  from {
+    top: -300px;
+    opacity: 0;
+  }
+  to {
+    top: 0;
+    opacity: 1;
+  }
+}
+.g-animate-left {
+  position: relative;
+  animation: animateleft 0.4s;
+}
+@keyframes animateleft {
+  from {
+    left: -300px;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+.g-animate-right {
+  position: relative;
+  animation: animateright 0.4s;
+}
+@keyframes animateright {
+  from {
+    right: -300px;
+    opacity: 0;
+  }
+  to {
+    right: 0;
+    opacity: 1;
+  }
+}
+.g-animate-bottom {
+  position: relative;
+  animation: animatebottom 0.4s;
+}
+@keyframes animatebottom {
+  from {
+    bottom: -300px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+.g-animate-zoom {
+  animation: animatezoom 0.3s;
+}
+@keyframes animatezoom {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.g-animate-input {
+  transition: width 0.4s ease-in-out;
+}
+.w3-animate-input:focus {
+  width: 100% !important;
+}
+
+.header-md::after,
+.tabs-md[tabsPlacement="top"] > .tabbar::after,
+.footer-md::before,
+.tabs-md[tabsPlacement="bottom"] > .tabbar::before {
+  left: 0;
+  bottom: -5px;
+  background-position: left 0 top -2px;
+  position: absolute;
+  width: 0px;
+  height: 5px;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAHBAMAAADzDtBxAAAAD1BMV…h/TXEAAAAaSURBVAjXYxCEAgY4UIICBmMogMsgFLtAAQCNSwXZKOdPxgAAAABJRU5ErkJggg==);
+  background-repeat: repeat-x;
+  content: "";
+}
+.toolbar-content-md {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  -webkit-box-ordinal-group: 4;
+  -webkit-order: 3;
+  -ms-flex-order: 3;
+  order: 3;
+  min-width: 0;
+  display: flex;
+  max-width: 100%;
+}
+.menudesp {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 45vh;
+  width: 100%;
+  background: white;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 2s;
+  border-radius: 20%;
+
+  .content {
+    width: 100%;
+    height: 100%;
+    .title {
+      border-radius: 10px 10px 0px 0px;
+      width: 100%;
+      height: 10vh;
+      background: white;
+
+      border-bottom: 1px solid #15151545;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: $verde;
+      font-weight: bold;
+      padding-left: $left;
+      padding-right: $right;
+      font-size: 17px;
+    }
+
+    .costumers {
+      width: 100%;
+      height: 85%;
+      background: white;
+      overflow: auto;
+
+      .costumer {
+        padding-left: $left;
+        padding-right: $right;
+        width: 100%;
+        height: 10vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: white;
+        border-bottom: 1px solid #15151545;
+      }
+    }
+  }
+}
+
+.cortina {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100vh;
+  z-index: 600;
+  background: rgba(21, 21, 21, 0.6);
+  animation: opac 0.3s;
+}
+
+.hide-bottom {
+  bottom: -100vh;
+  opacity: 0;
+  transition-duration: 2s;
+  animation: gotodown 0.7s;
+}
+
+.animate-bottom {
+  animation: gotoup 0.2s;
+}
+
+@keyframes opac {
+  0% {
+    background: transparent;
+  }
+
+  100% {
+    background: rgba(21, 21, 21, 0.6);
+  }
+}
+
+@keyframes gotodown {
+  0% {
+    bottom: 0vh;
+  }
+
+  100% {
+    bottom: -100vh;
+  }
+}
+
+@keyframes gotoup {
+  0% {
+    bottom: -100vh;
+  }
+
+  100% {
+    bottom: 0vh;
+    //top:0px;
+  }
+}
+
+.centrado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.orange {
+  color: $orange;
+}
+.red {
+  color: $incorrect;
+}
+.green {
+  color: $correct;
+}

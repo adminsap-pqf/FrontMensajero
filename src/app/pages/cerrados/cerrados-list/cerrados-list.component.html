@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-tab-bar color="cabecera">
+    <ion-title color="primary">Cerrados</ion-title>
+  </ion-tab-bar>
+</ion-header>
+<ion-content>
+  <div class="lst-content">
+    <div class="contenedorElement">
+      <div
+        class="element"
+        *ngFor="let item of arrayAux; let i = index"
+        (click)="go(i)"
+      >
+        <div class="state">
+          <div
+            class="green-circle"
+            [style.background]="
+              item.inaplasables > 0
+                ? '#952936'
+                : item.urgentes > 0
+                  ? '#DACA00'
+                  : '#25AE18'
+            "
+          ></div>
+        </div>
+        <div class="description">
+          <div class="name">#{{ i + 1 }}· {{ item.empresa }}</div>
+          <div class="subname">
+            <div *ngIf="item.eventos == 1">
+              {{ item.eventos }} Evento:
+              <span class="red">{{ item.inaplasables }}I</span> ·
+              <span class="orange">{{ item.urgentes }}U</span> ·
+              <span class="green">{{ item.normales }}N</span>
+            </div>
+            <div *ngIf="item.eventos != 1">
+              {{ item.eventos }} Eventos:
+              <span class="red">{{ item.inaplasables }}I</span> ·
+              <span class="orange">{{ item.urgentes }}U</span> ·
+              <span class="green">{{ item.normales }}N</span>
+            </div>
+          </div>
+          <div class="address">
+            <span> {{ item.ruta }} </span>
+          </div>
+        </div>
+        <div class="arrow">
+          <img src="./assets/img/imgs/flecha_ingresar.svg" alt="" />
+        </div>
+      </div>
+    </div>
+    <div class="total">
+      <span> # {{ totalPendientes }} Pendientes</span>
+    </div>
+  </div>
+</ion-content>

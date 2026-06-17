@@ -1,0 +1,416 @@
+@use "src/theme/variables" as v;
+
+.btn {
+  button {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    color: #25ae18;
+    font-size: 14px;
+    font-weight: bold;
+  }
+    ion-button.btn-receptor {
+      width: 100%;
+      height: 100%;
+      --background: #ffffff;
+      --color: #25ae18;
+      --box-shadow: none;
+      font-size: 14px;
+    }
+
+}
+
+.folio-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: v.$verde;
+  font-weight: bold;
+  height: 8vh;
+  font-size: 16px;
+}
+
+.options-receptor {
+  height: 45px;
+  margin: 0 20px;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: v.$verde;
+  border-top: 1px solid #eaeef3;
+  border-bottom: 1px solid #eaeef3;
+}
+
+.item-wrapper {
+  margin: 0 20px;
+  width: 90%;
+  height: 55px;
+  border-bottom: 1px solid #eaeef3;
+
+  & > .item {
+    height: 55px;
+    padding: 0px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    & > .item-inner {
+      padding: 0px;
+    }
+
+    .label {
+      margin-right: 0px;
+    }
+  }
+}
+
+.receptor-item {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  .numeracion {
+    color: v.$verde;
+    margin-top: 10px;
+  }
+
+  .info-receptor {
+    width: 90%;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .mark-receptor {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+  }
+}
+
+.verde {
+  color: v.$verde;
+}
+
+.verdeClaro {
+  color: v.$correct;
+}
+
+.receptor-content {
+  width: 100%;
+  height: 70%;
+  overflow-y: scroll;
+  background: transparent;
+  color: v.$verde;
+
+  .btnEliminar {
+    width: 22%;
+    height: 100%;
+    ion-button.btnDeletedR{
+      height: 100%;
+      --color: #ffffff;
+      --background: #D0021B;
+      --box-shadow: none;
+      margin: 0;
+    }
+
+    .button-md-white {
+      color: #ffffff;
+      background-color: #d0021b;
+      font-size: 12px;
+    }
+
+    .button-ios-white {
+      color: #ffffff;
+      background-color: #d0021b;
+      font-size: 12px;
+    }
+  }
+}
+
+.name {
+  color: #151515;
+  margin-bottom: 0px;
+  font-size: 15px;
+}
+
+.area {
+  font-size: 12px;
+  margin-top: 0.5px;
+  padding-top: 1px;
+  color: v.$verde;
+}
+
+.menudesp {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 35%;
+  width: 95%;
+  background: transparent;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 2s;
+  border-radius: 10%;
+  margin-left: 10px;
+  margin-bottom: 20px;
+
+  .content {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 1%;
+
+    .costumers {
+      // padding-left: $left;
+      // padding-right: $right;
+      width: 100%;
+      height: 60%;
+      align-items: center;
+      background: white;
+      border-bottom: 1px solid #eaeef3;
+      border-radius: 10px;
+
+      .texto {
+        height: 60%;
+        display: flex;
+
+        ¡ span {
+          color: #008894;
+        }
+
+        .imgs {
+          margin-top: 35px;
+          width: 5%;
+          height: 100%;
+          margin-right: 15px;
+          margin-left: 50px;
+
+          img {
+            width: 28px;
+            height: 28px;
+          }
+        }
+
+        div {
+          margin-top: 40px;
+          width: 80%;
+          height: 100%;
+        }
+      }
+
+      .btn {
+        width: 100%;
+        height: 10%;
+
+        ion-button.confirmReceptor{
+          width: 100%;
+          height: 100%;
+          --background: #fff;
+          --color: #25ae18;
+          --box-shadow: none;
+
+        }
+        .button-md-white {
+          color: #008894;
+          background-color: #ffffff;
+        }
+
+        .button-outline-md-white {
+          border-color: transparent;
+          color: #008997;
+          background-color: transparent;
+        }
+
+        .button-outline-ios-white {
+          border-color: #ffffff;
+          color: #008997;
+          background-color: transparent;
+        }
+
+        .button-ios-white {
+          color: #008894;
+          background-color: #ffffff;
+        }
+      }
+    }
+  }
+}
+
+.menudesp2 {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 40%;
+  width: 95%;
+  background: transparent;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 2s;
+  border-radius: 20%;
+  margin-left: 10px;
+  margin-bottom: 20px;
+
+  .content {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+
+    .costumers {
+      // padding-left: $left;
+      // padding-right: $right;
+      width: 100%;
+      height: 50%;
+      align-items: center;
+      background: white;
+      border-bottom: 1px solid #eaeef3;
+
+      .texto {
+        // margin-top: 15px;
+        // margin-left: 15%;
+        // margin-right: 15%;
+        // width: 95%;
+        height: 65%;
+        display: flex;
+
+        span {
+          color: #008894;
+        }
+
+        .imgs {
+          margin-top: 30px;
+          width: 5%;
+          height: 100%;
+          margin-right: 15px;
+          margin-left: 25px;
+
+          img {
+            width: 28px;
+            height: 28px;
+          }
+        }
+
+        div {
+          margin-top: 30px;
+          width: 80%;
+          height: 100%;
+        }
+      }
+
+      .cerrar{
+        ion-button.deleteRec{
+          height: 100%;
+          --background: #fff;
+          --color: #d0021b;
+          --box-shadow: none;
+        }
+      }
+    }
+    .btn {
+      width: 100%;
+      height: 10%;
+
+      ion-button.cancelDeleteRec {
+        height: 100%;
+        --background: #fff;
+        --color: #25ae18;
+
+      }
+    }
+  }
+}
+.cerrar {
+  ion-button.cancelReceptor {
+    font-size: 14px;
+    --background: #ffffff;
+    --border-radius: 5px;
+    span {
+      color: #d0021b;
+    }
+  }
+}
+
+.cortina {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100vh;
+  z-index: 600;
+  background: rgba(21, 21, 21, 0.6);
+  animation: opac 0.3s;
+}
+
+.hide-bottom {
+  bottom: -100vh;
+  opacity: 0;
+  transition-duration: 2s;
+  animation: gotodown 0.7s;
+}
+
+.animate-bottom {
+  animation: gotoup 0.2s;
+}
+
+@keyframes opac {
+  0% {
+    background: transparent;
+  }
+
+  100% {
+    background: rgba(21, 21, 21, 0.6);
+  }
+}
+
+@keyframes gotodown {
+  0% {
+    bottom: 0vh;
+  }
+  50% {
+    bottom: -100vh;
+  }
+  100% {
+    display: none;
+  }
+}
+
+@keyframes gotoup {
+  0% {
+    bottom: -100vh;
+  }
+
+  100% {
+    bottom: 0vh;
+    //top:0px;
+  }
+}
+
+.plus-ctn {
+  width: 100%;
+  height: 12vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+}
+
+.button-md {
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  color: #25ae18 !important;
+}

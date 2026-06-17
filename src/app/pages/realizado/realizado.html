@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons style="width: 30px" slot="start">
+      <ion-back-button color="primary"></ion-back-button>
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center">
+      {{realizados[0]?.empresa}}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="options-receptor">
+    <div>Receptores</div>
+  </div>
+
+  <div class="receptor-content">
+    <ion-list>
+      <ion-item-sliding
+        #item
+        *ngFor="let receptor of receptoresList; let i =index"
+      >
+        <ion-item (click)="selectReceptor(i)">
+          <div class="receptor-item">
+            <div class="info-receptor">
+              <p class="name">
+                <span class="numeracion"> #{{ i+1 }} ·</span> {{ receptor.nombre
+                }}
+              </p>
+              <p class="area" *ngIf="receptor.puesto == '' ">
+                <span style="color: #ffffff; font-size: 15px">
+                  #{{ i+1 }} ·</span
+                >
+                s/a
+              </p>
+              <p class="area" *ngIf="receptor.puesto != '' ">
+                <span style="color: #ffffff; font-size: 15px">
+                  #{{ i+1 }} ·</span
+                >
+                {{ receptor.puesto }}
+              </p>
+            </div>
+            <div class="mark-receptor">
+              <img
+                width="19px"
+                *ngIf="i==receptorSeleceted"
+                class="g-animate-opacity"
+                src="./assets/img/imgs/RADIO_ACTIVO.svg"
+                alt=""
+              />
+              <img
+                width="19px"
+                *ngIf="i!=receptorSeleceted"
+                class="g-animate-zoom"
+                src="./assets/img/imgs/RADIO.svg"
+                alt=""
+              />
+            </div>
+          </div>
+        </ion-item>
+        <ion-item-options>
+          <div class="btnEliminar">
+            <ion-button expand="full" class="btnDeletedR" (click)="BorrarReceptor(i)">Eliminar</ion-button>
+          </div>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+
+  <div class="btn">
+    <ion-button expand="full" strong="true" class="btn-receptor" (click)="receptor()"> NUEVO RECEPTOR </ion-button>
+  </div>
+</ion-content>
+
+<div
+  [ngClass]="' '+(openbottom?'cortina':'hide-cortina')"
+  (click)="esconder()"
+></div>
+<div
+  [ngClass]="'menudesp '+(openbottom?'animate-bottom':'hide-bottom')"
+  (click)="esconder()"
+>
+  <div class="content">
+    <div class="costumers">
+      <div class="texto">
+        <div class="imgs">
+          <img
+            alt=""
+            src="./assets/img/imgs/aviso.svg"
+            width="28"
+            height="28"
+          />
+        </div>
+        <div>Confirmar Receptor <span> {{nombreReceptor}} </span></div>
+      </div>
+      <div class="btn">
+        <ion-button expand="full" strong="true" class="confirmReceptor" (click)="enviarAFirma()">
+          <span> Aceptar </span>
+        </ion-button>
+      </div>
+    </div>
+    <div class="cerrar">
+      <ion-button expand="block" strong="true" class="cancelReceptor" (click)="esconder()">
+        <span> Cancelar </span>
+      </ion-button>
+    </div>
+  </div>
+</div>
+
+<div
+  [ngClass]="' '+(openbottom2?'cortina':'hide-cortina')"
+  (click)="esconder()"
+></div>
+<div
+  [ngClass]="'menudesp2 '+(openbottom2?'animate-bottom':'hide-bottom')"
+  (click)="esconder()"
+>
+  <div class="content">
+    <div class="costumers">
+      <div class="texto">
+        <div class="imgs">
+          <img src="../../assets/imgs/aviso.svg" width="28" height="28" />
+        </div>
+        <div>
+          ¿Estás seguro de eliminar a <span> {{nombreReceptor}} </span> de la
+          lista de Receptores?
+        </div>
+      </div>
+      <div class="cerrar">
+        <ion-button expand="full" strong="true" class="deleteRec" (click)="eliminar()">
+          <span> Eliminar Receptor </span>
+        </ion-button>
+      </div>
+    </div>
+    <div class="btn">
+      <ion-button expand="block" strong="true"  class="cancelDeleteRec" (click)="esconder2()">
+        <span> Cancelar </span>
+      </ion-button>
+    </div>
+  </div>
+</div>

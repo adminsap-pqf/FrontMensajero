@@ -1,0 +1,19 @@
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>
+
+<ion-tab-bar slot="bottom" [mode]="'footer'">
+  <ion-tab-button
+    class="tab-button"
+    *ngFor="let tab of tabOptions; trackBy: handleTrackBy"
+    tab="{{ tab.id }}"
+    (click)="handleSelectedTab(tab.id)"
+  >
+    <ion-icon
+      [src]="tab.selected ? tab.selectedIcon : tab.defaultIcon"
+    ></ion-icon>
+    <ion-label color="{{ tab.selected ? 'primary' : '' }}">
+      {{ tab.name }}</ion-label
+    >
+  </ion-tab-button>
+</ion-tab-bar>

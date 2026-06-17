@@ -1,0 +1,236 @@
+@use "src/theme/variables" as v;
+.todo {
+  width: 100%;
+  height: 100%;
+  background: #eaeef3;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.contenido {
+  width: 90%;
+  height: 84%;
+  margin: 20px 20px 5px 20px;
+  overflow: scroll;
+
+  .content {
+    background: #ffffff;
+    margin-bottom: 10px;
+  }
+  .unos {
+    display: flex;
+    flex-direction: row;
+    padding: 15px 20px;
+    align-items: center;
+    justify-content: space-between;
+
+    .imgenes {
+      width: 20px;
+      /* height: 30px; */
+      margin-top: 3px;
+    }
+    label {
+      margin-right: 8px;
+      margin-left: 0px;
+      width: 60%;
+      span {
+        color: #008894;
+      }
+    }
+    span {
+      color: #008894;
+    }
+  }
+  .dos {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #eaeef3;
+    padding: 5px 20px 25px 20px;
+
+    .imgenes {
+      width: 20px;
+      padding-top: -3px;
+      /* height: 30px; */
+    }
+
+    .content2 {
+      height: 30px;
+      padding: 0px 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border-bottom: 1px solid #eaeef3;
+      font-size: 13px;
+    }
+  }
+}
+
+.btn {
+  width: 100%;
+  height: 49px;
+  margin-bottom: 20px;
+
+  ion-button {
+    height: 100%;
+    --background: #ffffff;
+    --color: #25ae18;
+    --box-shadow: none;
+    font-size: 14px;
+  }
+}
+
+.titulos {
+  display: flex;
+  border-bottom: 1px solid #eaeef3;
+  height: 35px;
+  .green-circle {
+    height: 10px;
+    margin-top: 5px;
+    margin-right: 15px;
+    width: 10px;
+    border-radius: 50px;
+    background: #25ae18;
+  }
+  span {
+    color: #008894;
+  }
+  label {
+    width: 80%;
+  }
+}
+
+.pendientes {
+  font-size: 12px;
+  margin-left: 25px;
+  height: 40px;
+  display: flex;
+  width: 100%;
+  margin-top: 5px;
+  border-bottom: 1px solid #eaeef3;
+
+  .pendiente {
+    width: 80%;
+
+    // border-bottom: 1px solid #EAEEF3;
+  }
+  .imagen {
+    width: 10%;
+  }
+}
+.item-ios.item-block .item-inner {
+  padding-right: 8px;
+  padding-right: 8px;
+  border-bottom: 0px;
+}
+
+.menudesp {
+  position: absolute;
+  bottom: 0px;
+  z-index: 600;
+  height: 45vh;
+  width: 100%;
+  background: white;
+  position: absolute;
+  // transition-duration: 2s;
+  animation-duration: 2s;
+  border-radius: 20%;
+  margin-bottom: 10px;
+  .content {
+    width: 100%;
+    height: 100%;
+
+    .title {
+      border-radius: 10px 10px 0px 0px;
+      width: 100%;
+      height: 10vh;
+      background: white;
+
+      border-bottom: 1px solid #15151545;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: v.$verde;
+      font-weight: bold;
+      padding-left: v.$left;
+      padding-right: v.$right;
+      font-size: 17px;
+    }
+
+    .costumers {
+      width: 100%;
+      height: 85%;
+      background: white;
+      overflow: auto;
+
+      .costumer {
+        padding-left: v.$left;
+        padding-right: v.$right;
+        width: 100%;
+        height: 10vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: white;
+        border-bottom: 1px solid #15151545;
+      }
+    }
+  }
+}
+
+.cortina {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100vh;
+  z-index: 600;
+  background: rgba(21, 21, 21, 0.6);
+  animation: opac 0.3s;
+}
+
+.hide-bottom {
+  bottom: -100vh;
+  opacity: 0;
+  transition-duration: 2s;
+  animation: gotodown 0.7s;
+}
+
+.animate-bottom {
+  animation: gotoup 0.2s;
+}
+
+@keyframes opac {
+  0% {
+    background: transparent;
+  }
+
+  100% {
+    background: rgba(21, 21, 21, 0.6);
+  }
+}
+
+@keyframes gotodown {
+  0% {
+    bottom: 0vh;
+  }
+  100% {
+    bottom: -100vh;
+  }
+}
+
+@keyframes gotoup {
+  0% {
+    bottom: -100vh;
+  }
+  100% {
+    bottom: 0vh;
+    //top:0px;
+  }
+}
+
+.button-md {
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  color: #25ae18 !important;
+}

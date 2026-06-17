@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar color="cabecera">
+    <ion-buttons slot="start">
+      <ion-back-button
+        color="primary"
+        defaultHref="/tabs/colectar-list"
+      ></ion-back-button>
+    </ion-buttons>
+    <ion-title color="primary" style="text-align: center">
+      <div class="nomb">{{ nombreCliente }}</div>
+      <div class="subname">
+        Colectar Elementos <span> {{ items.length }} {{ acronimo }} </span>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="todo">
+    <div class="contenedor">
+      <div
+        *ngFor="let items of items; let i = index"
+        style="margin-bottom: 10px"
+        (click)="leerCodigo(i)"
+      >
+        <div class="head">
+          <div class="uno">
+            <div
+              class="titulo"
+              *ngIf="!codigoValido[i] || items.evento == 'Entrega'"
+            >
+              #{{ i + 1 }} · {{ items.folioEvento }}
+            </div>
+            <div
+              class="titulo1"
+              *ngIf="codigoValido[i] && items.evento != 'Entrega'"
+            >
+              #{{ i + 1 }} · {{ items.folioEvento }}
+            </div>
+          </div>
+          <div class="dos">
+            <div *ngIf="items.evento == 'Entrega'">
+              {{ items.folioProducto.split(",").length }} Folios
+            </div>
+            <div class="arrow" *ngIf="items.evento != 'Entrega'">
+              <img
+                src="assets/img/imgs2/QR_gris.svg"
+                *ngIf="!codigoValido[i]"
+              />
+              <img
+                src="assets/img/imgs2/QR_verde.svg"
+                *ngIf="codigoValido[i]"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="subItem" *ngIf="items.evento == 'Entrega'">
+          <div
+            *ngFor="let item of items.folioProducto.split(','); let i2 = index"
+            (click)="leerCodigo(i, i2)"
+          >
+            <div class="subUno">
+              <span [ngClass]="codigoValido[i][i2] ? 'verde' : ''"
+                >#{{ i2 + 1 }} · {{ item }}</span
+              >
+            </div>
+            <div class="subDos">
+              <div class="arrow">
+                <img
+                  src="assets/img/imgs2/QR_gris.svg"
+                  *ngIf="!codigoValido[i][i2]"
+                />
+                <img
+                  src="assets/img/imgs2/QR_verde.svg"
+                  *ngIf="codigoValido[i][i2]"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="btn">
+      <ion-button expand="full" strong="true" class="custom-button" (click)="finalizar()">
+        FINALIZAR
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
