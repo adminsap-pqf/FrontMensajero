@@ -3,13 +3,14 @@ import { COLORSMAPS } from '../../../../utils/MapTheme';
 import { Subscription } from 'rxjs';
 import { Recorrido } from '../../../../classes/Recorrido';
 import { StorageProvider } from '../../../../providers/storage/storage';
-import { ModalController, NavController } from '@ionic/angular';
+import { LoadingController, ModalController, NavController } from '@ionic/angular';
 import { PendientesProvider } from '../../../../providers/pendientes/pendientes';
 import { ComunService } from '../../../../providers/comun/comun';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { ActivatedRoute } from '@angular/router';
 import { MisRecorridosPage } from './mis-recorridos/mis-recorridos';
 import { AppLauncher } from '@capacitor/app-launcher';
+import { Dialog } from '@capacitor/dialog';
 
 declare var google: any;
 
@@ -78,9 +79,6 @@ export class MapaPage {
   latitudActual: any = null;
   longitudActual: any = null;
   altitudActual: any = null;
-  dlong: any;
-  dlongP: any;
-  degtorad: any = 0.01745329;
 
   txtDistancia: String = '';
 
@@ -103,6 +101,7 @@ export class MapaPage {
     private _login: ComunService,
     private activatedRoute: ActivatedRoute,
     private navCtrl: NavController,
+    private loadingCtrl: LoadingController,
   ) {
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
       console.log('llega->', JSON.parse(params.items));
@@ -495,7 +494,74 @@ export class MapaPage {
     this.openbottom3 = false;
   }
 
-  validarUbicacion() {
+  /**
+   * @method asegurarUbicacionActual
+   * @description Espera (mostrando un spinner) hasta que el GPS del mensajero
+   * esté disponible. Primero intenta un fix activo con getCurrentPosition y, como
+   * respaldo, espera a que el watcher (watchPosition) llene la posición.
+   * @returns true si se obtuvo la ubicación; false si se agotó el tiempo.
+   * **/
+  async asegurarUbicacionActual(maxEsperaMs: number = 15000): Promise<boolean> {
+    // Si ya tenemos ubicación, no hay nada que esperar.
+    if (this.latitudActual != null && this.longitudActual != null) {
+      return true;
+    }
+
+    const loading = await this.loadingCtrl.create({
+      message: 'Obteniendo tu ubicación, espera...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    // 1) Intento activo de obtener un fix de inmediato.
+    try {
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: maxEsperaMs,
+        maximumAge: 0,
+      });
+      this.latitudActual = pos.coords.latitude;
+      this.longitudActual = pos.coords.longitude;
+      this.altitudActual = pos.coords.altitude;
+    } catch (e) {
+      console.error(
+        'Mensaje en consola No se obtuvo posición activa; se espera al watcher',
+        e,
+      );
+    }
+
+    // 2) Respaldo: si aún no hay posición, esperar a que el watcher la llene.
+    const inicio = Date.now();
+    while (
+      (this.latitudActual == null || this.longitudActual == null) &&
+      Date.now() - inicio < maxEsperaMs
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    await loading.dismiss();
+    return this.latitudActual != null && this.longitudActual != null;
+  }
+
+  async validarUbicacion() {
+    // El GPS del mensajero (latitudActual/longitudActual) lo llena watchPosition
+    // de forma asíncrona. Si el mensajero valida antes de que llegue el primer
+    // fix, esas coordenadas están en null y la distancia sale mal (marca "lejos").
+    // Por eso esperamos a tener la ubicación antes de validar.
+    // Excepción: idFuncion == 2 no usa GPS real (se fuerza a 1 más abajo).
+    if (this._login.Usuario.idFuncion != 2) {
+      const tieneUbicacion = await this.asegurarUbicacionActual();
+      if (!tieneUbicacion) {
+        await Dialog.alert({
+          title: 'Ubicación no disponible',
+          message:
+            'No se pudo obtener tu ubicación GPS. Verifica que el GPS esté ' +
+            'encendido y que la app tenga permiso de ubicación, e inténtalo de nuevo.',
+        });
+        return;
+      }
+    }
+
     let latitud: any = this.items[0].latitud;
     let longitud: any = this.items[0].longitud;
     console.log('this.items[0].latitud', this.items[0].latitud);
@@ -512,14 +578,16 @@ export class MapaPage {
       longitud = 0;
     }
 
-    this.dlongP = -longitudP + this.longitudActual;
-    distanciaP =
-      Math.sin(latitudP * this.degtorad) *
-      Math.sin(this.latitudActual * this.degtorad) +
-      Math.cos(latitudP * this.degtorad) *
-      Math.cos(this.latitudActual * this.degtorad) *
-      Math.cos(this.dlongP * this.degtorad);
-    distanciaP = Math.acos(distanciaP) * 6371000;
+    // Distancia del mensajero a Proquifa (misma función que usa el log).
+    distanciaP = this.calcularDistancia(
+      this.latitudActual,
+      this.longitudActual,
+      latitudP,
+      longitudP,
+    );
+    if (distanciaP == null) {
+      distanciaP = 10000;
+    }
 
     console.log('item', this.items);
 
@@ -561,15 +629,16 @@ export class MapaPage {
       );
     } else {
       if (latitud != 0 && longitud != 0) {
-        this.dlong = -longitud + this.longitudActual;
-
-        distancia =
-          Math.sin(latitud * this.degtorad) *
-          Math.sin(this.latitudActual * this.degtorad) +
-          Math.cos(latitud * this.degtorad) *
-          Math.cos(this.latitudActual * this.degtorad) *
-          Math.cos(this.dlong * this.degtorad);
-        distancia = Math.acos(distancia) * 6371000;
+        // Distancia del mensajero al destino (misma función que usa el log).
+        distancia = this.calcularDistancia(
+          this.latitudActual,
+          this.longitudActual,
+          latitud,
+          longitud,
+        );
+        if (distancia == null) {
+          distancia = 10000;
+        }
       } else {
         distancia = 10000;
       }
@@ -601,24 +670,218 @@ export class MapaPage {
   }
 
   validarUbicacionProquifa() {
-    let latitud: any = this._proquifa[0];
-    let longitud: any = this._proquifa[1];
-    let distancia: any = 0;
-    this.dlong = -longitud + this.longitudActual;
+    const distancia = this.calcularDistancia(
+      this.latitudActual,
+      this.longitudActual,
+      this._proquifa[0],
+      this._proquifa[1],
+    );
+    this.isProquifa = distancia != null && distancia < 1000;
+  }
 
-    distancia =
-      Math.sin(latitud * this.degtorad) *
-      Math.sin(this.latitudActual * this.degtorad) +
-      Math.cos(latitud * this.degtorad) *
-      Math.cos(this.latitudActual * this.degtorad) *
-      Math.cos(this.dlong * this.degtorad);
-    distancia = Math.acos(distancia) * 6371000;
-
-    if (distancia < 1000) {
-      this.isProquifa = true;
-    } else {
-      this.isProquifa = false;
+  /**
+   * @method calcularDistancia
+   * @description Calcula la distancia en metros entre dos coordenadas usando la
+   * MISMA fórmula (ley esférica de cosenos) que validarUbicacion(), para que el
+   * log refleje exactamente lo que evalúa la validación.
+   * Devuelve null si algún dato no es un número válido.
+   * **/
+  calcularDistancia(
+    lat1: any,
+    lon1: any,
+    lat2: any,
+    lon2: any,
+  ): number | null {
+    // Acepta números o cadenas (incluso con coma decimal, como puede venir de
+    // la BD). Devuelve null si algún dato no es numérico.
+    const toNum = (v: any): number | null => {
+      if (v === null || v === undefined || v === '') {
+        return null;
+      }
+      const n = parseFloat(String(v).replace(',', '.'));
+      return isNaN(n) ? null : n;
+    };
+    const a1 = toNum(lat1);
+    const o1 = toNum(lon1);
+    const a2 = toNum(lat2);
+    const o2 = toNum(lon2);
+    if (a1 == null || o1 == null || a2 == null || o2 == null) {
+      return null;
     }
+
+    // Fórmula de Haversine: estable para distancias cortas. La ley esférica de
+    // cosenos que se usaba antes devolvía NaN cuando los dos puntos casi
+    // coincidían (por redondeo, acos recibía un valor > 1), y por eso la app
+    // marcaba "estás lejos" aun estando el mensajero parado en la ubicación.
+    const R = 6371000; // radio de la Tierra en metros
+    const rad = Math.PI / 180;
+    const dLat = (a2 - a1) * rad;
+    const dLon = (o2 - o1) * rad;
+    const h =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a1 * rad) *
+        Math.cos(a2 * rad) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const d = 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    return isNaN(d) ? null : d;
+  }
+
+  /**
+   * @method generarLog
+   * @description Vuelca un diagnóstico de la validación de ubicación: posición del
+   * mensajero, posición del destino (tal como llega de la BD), Proquifa, distancias
+   * calculadas, qué condición falla y los IDs para reproducir la consulta en la BD.
+   * Lo imprime en consola (visible con `adb logcat | findstr Console`) y lo muestra
+   * en pantalla para poder leerlo/capturarlo en el dispositivo.
+   * **/
+  async generarLog() {
+    const item = this.items && this.items.length ? this.items[0] : null;
+
+    const latDest = item ? item.latitud : null;
+    const lonDest = item ? item.longitud : null;
+
+    // Convierte a número soportando coma decimal; null si no es numérico.
+    const toNum = (v: any): number | null => {
+      if (v === null || v === undefined || v === '') {
+        return null;
+      }
+      const n = parseFloat(String(v).replace(',', '.'));
+      return isNaN(n) ? null : n;
+    };
+
+    const latD = toNum(latDest);
+    const lonD = toNum(lonDest);
+    const latA = toNum(this.latitudActual);
+    const lonA = toNum(this.longitudActual);
+
+    const distanciaDestino =
+      latD == null || lonD == null || (latD === 0 && lonD === 0)
+        ? null
+        : this.calcularDistancia(latA, lonA, latD, lonD);
+    const distanciaProquifa = this.calcularDistancia(
+      latA,
+      lonA,
+      this._proquifa[0],
+      this._proquifa[1],
+    );
+
+    // Detección de datos faltantes/incorrectos del destino (lo que viene de la BD).
+    // Marcamos con banderas si el problema es de DATOS (BD) o del DISPOSITIVO (GPS)
+    // para poder dar un veredicto claro del origen más abajo.
+    const problemas: string[] = [];
+    let problemaBD = false;
+    let problemaGPS = false;
+    if (latDest === null || latDest === undefined || latDest === '') {
+      problemas.push('latitud destino NULA/vacía (revisar BD)');
+      problemaBD = true;
+    }
+    if (lonDest === null || lonDest === undefined || lonDest === '') {
+      problemas.push('longitud destino NULA/vacía (revisar BD)');
+      problemaBD = true;
+    }
+    if (latD === 0 && lonD === 0) {
+      problemas.push('coordenada destino en 0,0 (no capturada)');
+      problemaBD = true;
+    }
+    if (latD != null && latD !== 0 && (latD < 14 || latD > 33)) {
+      problemas.push('latitud destino fuera de México');
+      problemaBD = true;
+    }
+    if (lonD != null && lonD !== 0 && (lonD < -118 || lonD > -86)) {
+      problemas.push('longitud destino fuera de México');
+      problemaBD = true;
+    }
+    if (latD != null && lonD != null && Math.abs(latD) > Math.abs(lonD)) {
+      problemas.push('lat/long posiblemente INVERTIDAS');
+      problemaBD = true;
+    }
+    if (latA == null || lonA == null) {
+      problemas.push('GPS del mensajero no disponible');
+      problemaGPS = true;
+    }
+
+    const cumpleDestino = distanciaDestino != null && distanciaDestino < 1000;
+    const cumpleProquifa = distanciaProquifa != null && distanciaProquifa < 1000;
+
+    // Veredicto del ORIGEN del problema: ¿viene de la BD, del dispositivo (GPS),
+    // o simplemente el mensajero está lejos de verdad (datos correctos)?
+    let origen: string;
+    if (problemaBD) {
+      origen = 'DATOS DE LA BD — la coordenada del destino está mal o ausente';
+    } else if (problemaGPS) {
+      origen = 'DISPOSITIVO — no se obtuvo el GPS del mensajero';
+    } else if (!cumpleDestino && !cumpleProquifa) {
+      origen =
+        'LEJANÍA REAL — datos OK; el mensajero está a más de 1 km del destino y de Proquifa';
+    } else {
+      origen = 'SIN PROBLEMA — la validación debería PASAR';
+    }
+
+    const diagnostico = {
+      fecha: new Date().toISOString(),
+      origen_probable: origen,
+      mensajero: {
+        latitud: this.latitudActual,
+        longitud: this.longitudActual,
+      },
+      destino: {
+        empresa: this.nombreDestino,
+        direccion: this.direccion,
+        latitud_raw: latDest,
+        longitud_raw: lonDest,
+        tipo_latitud: typeof latDest,
+        tipo_longitud: typeof lonDest,
+      },
+      proquifa: { latitud: this._proquifa[0], longitud: this._proquifa[1] },
+      distancias_metros: {
+        al_destino: distanciaDestino,
+        a_proquifa: distanciaProquifa,
+      },
+      condicion: {
+        regla: 'PASA si (distanciaDestino < 1000) O (distanciaProquifa < 1000)',
+        cumple_destino: cumpleDestino,
+        cumple_proquifa: cumpleProquifa,
+        resultado: cumpleDestino || cumpleProquifa ? 'PASA' : 'NO PASA',
+      },
+      datos_para_consulta_BD: {
+        idCliente: item ? item.idCliente : null,
+        idRuta: item ? item.idRuta : null,
+        idHorario_FK01_Direccion: item ? item.idHorario : null,
+        evento: item ? item.evento : null,
+        folioEvento: item ? item.folioEvento : null,
+      },
+      problemas_detectados: problemas.length
+        ? problemas
+        : ['ninguno en los datos; revisar GPS/cobertura del dispositivo'],
+      item_completo: item,
+    };
+
+    console.log('=== LOG DIAGNÓSTICO UBICACIÓN ===');
+    console.log(JSON.stringify(diagnostico, null, 2));
+
+    const fmt = (d: number | null) =>
+      d == null ? 'N/D' : Math.round(d) + ' m';
+
+    const resumen =
+      `>>> ORIGEN PROBABLE: ${origen}\n\n` +
+      `Mensajero (GPS): ${this.latitudActual}, ${this.longitudActual}\n` +
+      `Destino (BD): ${latDest}, ${lonDest}\n` +
+      `Proquifa: ${this._proquifa[0]}, ${this._proquifa[1]}\n\n` +
+      `Dist. al destino: ${fmt(distanciaDestino)}\n` +
+      `Dist. a Proquifa: ${fmt(distanciaProquifa)}\n\n` +
+      `Regla: PASA si destino<1000m O Proquifa<1000m\n` +
+      `Cumple destino: ${cumpleDestino} | Cumple Proquifa: ${cumpleProquifa}\n` +
+      `Resultado: ${diagnostico.condicion.resultado}\n\n` +
+      `idCliente: ${diagnostico.datos_para_consulta_BD.idCliente}\n` +
+      `idRuta: ${diagnostico.datos_para_consulta_BD.idRuta}\n` +
+      `idHorario (FK01_Direccion): ${diagnostico.datos_para_consulta_BD.idHorario_FK01_Direccion}\n` +
+      `evento: ${diagnostico.datos_para_consulta_BD.evento}\n\n` +
+      `Problemas: ${
+        problemas.length ? problemas.join('; ') : 'ninguno en datos'
+      }`;
+
+    await Dialog.alert({ title: 'Log de diagnóstico', message: resumen });
   }
 
   loadMap() {
