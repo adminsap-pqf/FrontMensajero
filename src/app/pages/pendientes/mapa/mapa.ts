@@ -28,6 +28,15 @@ declare var google: any;
 // total_horas_perdidas_aqui = 32
 // Pd. Suerte colega XD !
 // Pd2. Ya funciona!!!
+//
+//
+//18/06/2026
+//Un mensaje del pasado al futuro
+//soy otro colaborador me dicen Mike
+//te deseo suerte colega.
+//
+//horas peridas: 28
+//Pd2. Mi version ya funciona!!
 
 @Component({
   selector: 'page-mapa',
@@ -151,29 +160,85 @@ export class MapaPage {
       console.log('Mensaje en consola Pendientes recibidos:', this.pendientes);
       console.log('Mensaje en consola Pendientes recibidos:', this.pendientes);
 
-      // Obtener la ubicación actual
+      // Círculo de "cargando" mientras se obtiene el GPS, se pinta el mapa y la ruta.
+      const loading = await this.loadingCtrl.create({
+        message: 'Cargando mapa...',
+        spinner: 'crescent',
+      });
+      await loading.present();
+
       try {
-        const position = await Geolocation.getCurrentPosition();
-        this.Mylat = position.coords.latitude;
-        this.Mylong = position.coords.longitude;
-      } catch (error) {
-        // Si no hay GPS o permiso de ubicación (p. ej. en el navegador de
-        // escritorio o sin señal), centramos el mapa en Proquifa para que
-        // igual se dibuje en lugar de quedarse en blanco.
-        console.error(
-          'Mensaje en consola No se pudo obtener la ubicación, usando ubicación por defecto:',
-          error,
-        );
-        this.Mylat = this._proquifa[0];
-        this.Mylong = this._proquifa[1];
+        // Obtener la ubicación actual (con timeout para no dejar el mapa esperando
+        // indefinidamente donde el GPS es débil).
+        try {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 30000,
+          });
+          this.Mylat = position.coords.latitude;
+          this.Mylong = position.coords.longitude;
+        } catch (error) {
+          // Si no hay GPS o permiso de ubicación (p. ej. en el navegador de
+          // escritorio o sin señal), centramos el mapa en Proquifa para que
+          // igual se dibuje en lugar de quedarse en blanco.
+          console.error(
+            'Mensaje en consola No se pudo obtener la ubicación, usando ubicación por defecto:',
+            error,
+          );
+          this.Mylat = this._proquifa[0];
+          this.Mylong = this._proquifa[1];
+        }
+
+        console.log('Latitud:', this.Mylat);
+        console.log('Longitud:', this.Mylong);
+
+        // Llamar a los métodos para cargar el mapa y crear la ruta.
+        // No se asigna el resultado a this.marker: loadMap ya creó el marcador
+        // "Mi Ubicación" que usa updatePosition; crearRuta solo dibuja la ruta.
+        this.mapdiv = this.loadMap();
+        await this.crearRuta();
+      } finally {
+        // Se cierra el círculo de carga pase lo que pase (éxito o error).
+        await loading.dismiss();
       }
 
-      console.log('Latitud:', this.Mylat);
-      console.log('Longitud:', this.Mylong);
+      // Aviso TEMPRANO: si el destino no tiene coordenada válida en la BD (y no es
+      // una captura intencional), se avisa apenas carga el mapa, no hasta finalizar.
+      if (this.destinoSinUbicacion()) {
+        await this.avisarDestinoSinUbicacion();
+      }
+    });
+  }
 
-      // Llamar a los métodos para cargar el mapa y crear la ruta
-      this.mapdiv = this.loadMap();
-      this.marker = this.crearRuta();
+  /**
+   * @method destinoSinUbicacion
+   * @description true si el destino NO tiene coordenada válida en la BD (null/0,0/
+   * fuera de rango) y NO es una captura intencional (flag actualizar).
+   * **/
+  destinoSinUbicacion(): boolean {
+    const item = this.items && this.items.length ? this.items[0] : null;
+    if (!item) {
+      return false;
+    }
+    if (item.actualizar) {
+      return false; // captura intencional; no es un dato faltante
+    }
+    return !this.esCoordenadaValida(item.latitud, item.longitud);
+  }
+
+  /**
+   * @method avisarDestinoSinUbicacion
+   * @description Muestra el aviso de que el destino no tiene ubicación registrada.
+   * **/
+  async avisarDestinoSinUbicacion() {
+    await Dialog.alert({
+      title: 'Destino sin ubicación registrada',
+      message:
+        'Este destino no tiene latitud/longitud registradas correctamente en ' +
+        'el sistema, por lo que no se puede validar tu cercanía ni finalizar el ' +
+        'recorrido. Repórtalo con Soporte a la Produccion, para que actualicen' +
+        'la información en la base de datos.',
     });
   }
 
@@ -604,10 +669,13 @@ export class MapaPage {
     console.log('Mensaje en consola latitud', latitud);
     console.log('Mensaje en consola longitud', longitud);
     console.log('Mensaje en consola distanciaP', distanciaP);
-    if (
-      this.items[0].actualizar ||
-      (latitud == 0 && longitud == 0 && distanciaP > 1000)
-    ) {
+    // ¿El destino trae una coordenada válida en la BD? (no null, no 0,0, en rango)
+    const destinoValido = this.esCoordenadaValida(latitud, longitud);
+
+    if (this.items[0].actualizar) {
+      // Captura INTENCIONAL de la ubicación del cliente (flag Actualizar en BD,
+      // p. ej. primera visita). Aquí sí se guarda el GPS del mensajero como
+      // coordenada del destino y se permite continuar.
       console.log('entro guardar coordenadas');
       for (let item of this.items) {
         item.latitud = this.latitudActual;
@@ -627,6 +695,17 @@ export class MapaPage {
           console.error(error);
         },
       );
+    } else if (!destinoValido) {
+      // El destino NO tiene latitud/longitud válidas en la BD (null / 0,0) y NO es
+      // una captura intencional. No se puede validar cercanía ni finalizar el
+      // recorrido: se bloquea y se avisa para corregir la ubicación en la BD.
+      console.error(
+        'Mensaje en consola Destino sin coordenada válida en BD -> no se permite finalizar:',
+        this.items[0].latitud,
+        this.items[0].longitud,
+      );
+      await this.avisarDestinoSinUbicacion();
+      return;
     } else {
       if (latitud != 0 && longitud != 0) {
         // Distancia del mensajero al destino (misma función que usa el log).
@@ -921,13 +1000,91 @@ export class MapaPage {
     return map;
   }
 
+  /**
+   * @method esCoordenadaValida
+   * @description Valida que un par lat/lng sea utilizable para trazar ruta:
+   * no nulo, no NaN, no (0,0) y dentro del rango mundial. Soporta coma decimal.
+   * **/
+  esCoordenadaValida(lat: any, lng: any): boolean {
+    const a = typeof lat === 'string' ? parseFloat(lat.replace(',', '.')) : lat;
+    const o = typeof lng === 'string' ? parseFloat(lng.replace(',', '.')) : lng;
+    if (a == null || o == null || isNaN(a) || isNaN(o)) {
+      return false;
+    }
+    if (a === 0 && o === 0) {
+      return false; // (0,0) cae en el océano Atlántico -> ZERO_RESULTS
+    }
+    if (a < -90 || a > 90 || o < -180 || o > 180) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * @method esperarOrigenValido
+   * @description Devuelve una posición válida del mensajero (Mylat/Mylong o, como
+   * respaldo, la del watcher latitudActual/longitudActual), reintentando hasta que
+   * el GPS dé un fix. Así la ruta se dibuja cuando llega la ubicación, en vez de
+   * cancelarse para siempre si el GPS aún no estaba listo.
+   * @returns {lat, lng} válido o null si se agotó el tiempo.
+   * **/
+  async esperarOrigenValido(
+    maxEsperaMs: number = 12000,
+  ): Promise<{ lat: number; lng: number } | null> {
+    const inicio = Date.now();
+    while (Date.now() - inicio < maxEsperaMs) {
+      if (this.esCoordenadaValida(this.Mylat, this.Mylong)) {
+        return { lat: this.Mylat, lng: this.Mylong };
+      }
+      if (this.esCoordenadaValida(this.latitudActual, this.longitudActual)) {
+        return { lat: this.latitudActual, lng: this.longitudActual };
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    return null;
+  }
+
   // Se Crean los primeros markadores
-  crearRuta() {
+  async crearRuta() {
     // this.isTracking = true;;
     console.log('--------->', this.coordenadasT);
 
-    let inicio = new google.maps.LatLng(this.Mylat, this.Mylong);
-    let final = this.coordenadasT;
+    let final: any = this.coordenadasT;
+    const destLat = final ? final.lat : null;
+    const destLng = final ? final.lng : null;
+
+    // El destino viene de la BD; si no es válido no hay nada que rutear.
+    if (!this.esCoordenadaValida(destLat, destLng)) {
+      console.error(
+        'Mensaje en consola No se dibuja ruta: coordenada del destino inválida (revisar BD):',
+        destLat,
+        destLng,
+      );
+      return;
+    }
+
+    // El GPS del mensajero puede tardar en dar el primer fix (o llegar 0,0).
+    // Esperamos a tener un origen válido en vez de cancelar la ruta.
+    const origen = await this.esperarOrigenValido();
+    if (!origen) {
+      console.error(
+        'Mensaje en consola No se dibuja ruta: no se obtuvo posición válida del mensajero (GPS sin fix)',
+      );
+      return;
+    }
+    const origenLat = origen.lat;
+    const origenLng = origen.lng;
+
+    console.log(
+      'Mensaje en consola crearRuta -> origen:',
+      origenLat,
+      origenLng,
+      '| destino:',
+      destLat,
+      destLng,
+    );
+
+    let inicio = new google.maps.LatLng(origenLat, origenLng);
 
     let directionsService = new google.maps.DirectionsService();
     let directionsDisplay = new google.maps.DirectionsRenderer({
@@ -950,24 +1107,29 @@ export class MapaPage {
 
     directionsDisplay.setOptions({suppressMarkers: true}); //Esta linea sirve para poder poner el tipo de  marcadores que quiera!!! :)
 
-    directionsService.route(
-      {
-        origin: inicio,
-        destination: final,
-        avoidTolls: true,
-        avoidHighways: false,
-        travelMode: google.maps.TravelMode.DRIVING,
-      },
-      function (response: any, status: any) {
-        if (status === 'OK') {
-          directionsDisplay.setDirections(response);
-          // console.log("promesa exitosa");
-        } else {
-          window.alert('Directions request failed due to ' + status);
-          // console.log("promesa fallida");
-        }
-      },
-    );
+    // Se envuelve en una promesa para que crearRuta() no termine (y el círculo de
+    // carga no se cierre) hasta que Google responda y se dibuje la ruta.
+    await new Promise<void>((resolve) => {
+      directionsService.route(
+        {
+          origin: inicio,
+          destination: final,
+          avoidTolls: true,
+          avoidHighways: false,
+          travelMode: google.maps.TravelMode.DRIVING,
+        },
+        (response: any, status: any) => {
+          if (status === 'OK') {
+            directionsDisplay.setDirections(response);
+            // console.log("promesa exitosa");
+          } else {
+            // No se molesta al usuario con un alert; solo se registra el motivo.
+            console.warn('Mensaje en consola Directions request: ' + status);
+          }
+          resolve();
+        },
+      );
+    });
 
     // Mostrar trafico
     let trafficLayer = new google.maps.TrafficLayer();

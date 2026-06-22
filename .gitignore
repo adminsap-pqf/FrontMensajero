@@ -68,3 +68,5 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+GUIA-AMBIENTACION.md
+android/app/build.gradle
