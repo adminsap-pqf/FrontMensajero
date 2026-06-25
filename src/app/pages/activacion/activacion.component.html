@@ -1,0 +1,64 @@
+<ion-content padding>
+  <ion-row
+    style="
+      height: 28vh;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      background: transparent;
+      margin-top: 8vh;
+    "
+  >
+    <ion-col
+      style="display: flex; align-content: center; justify-content: center"
+    >
+      <img src="assets/img/imgs/logo_1.svg" width="60%" alt="" />
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col style="text-align: center">
+      <h2 style="font-weight: 700; margin-bottom: 4px">Activación requerida</h2>
+      <p style="color: #666; font-size: 14px; padding: 0 12px">
+        Esta app está en desarrollo. Ingresa el código de acceso que recibiste
+        para continuar.
+      </p>
+    </ion-col>
+  </ion-row>
+
+  <ion-row style="margin-top: 2vh">
+    <ion-col>
+      <ion-item>
+        <ion-input
+          [(ngModel)]="codigo"
+          (keydown.enter)="activar()"
+          type="text"
+          autocapitalize="characters"
+          placeholder="MM-XXXX-XXXX"
+          style="text-align: center; letter-spacing: 1px"
+        ></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row style="height: 36px; margin-top: 48px">
+    <ion-col style="display: flex; justify-content: center">
+      <ion-button
+        color="primary"
+        expand="block"
+        [disabled]="validando"
+        style="
+          font-size: 18px;
+          text-transform: uppercase;
+          font-weight: 700;
+          width: 200px;
+          height: 36px;
+        "
+        (click)="activar()"
+      >
+        <ion-spinner *ngIf="validando" name="crescent"></ion-spinner>
+        <span *ngIf="!validando">Activar</span>
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

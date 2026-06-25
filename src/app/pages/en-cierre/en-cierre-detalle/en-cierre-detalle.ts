@@ -157,30 +157,52 @@ export class EnCierreDetallePage {
   }
 
   receptor() {
-    let lstPendientesTrue: any[] = [];
-    let lstPendientesFalse: any[] = [];
+    let itemTrue: any[] = [];
+    let itemFalse: any[] = [];
+    let hayEntrega = false;
+
+    // Acumula los folios de TODOS los Packing Lists antes de navegar.
+    // (Antes processEntrega navegaba dentro del ciclo y solo se procesaba
+    //  el primer Packing List; los demás quedaban en 'EnEjecucion'.)
     for (let i = 0; i < this.arrayAux.length; i++) {
       if (this.arrayAux[i].evento !== 'Entrega') {
         if (this.codigoValido[i]) {
           this.arrayAux[i].realizadoTxt = 'Realizada';
-          lstPendientesTrue.push({...this.arrayAux[i]});
+          itemTrue.push({...this.arrayAux[i]});
         } else {
           this.arrayAux[i].realizadoTxt = 'No realizada';
-          lstPendientesFalse.push({...this.arrayAux[i]});
+          itemFalse.push({...this.arrayAux[i]});
         }
       } else {
-        this.processEntrega(lstPendientesFalse, lstPendientesFalse, i);
+        hayEntrega = true;
+        this.processEntrega(itemTrue, itemFalse, i);
+      }
+    }
+
+    if (hayEntrega) {
+      if (itemTrue.length > 0) {
+        this.navCtrl.navigateForward(['/tabs/en-cierre/realizado'], {
+          queryParams: {
+            realizados: JSON.stringify(itemTrue),
+            noRealizados: JSON.stringify(itemFalse),
+          },
+        });
+      } else {
+        this.navCtrl.navigateForward(['tabs/en-cierre/no-realizado'], {
+          queryParams: {
+            noRealizados: JSON.stringify(itemFalse),
+            isRealizados: false,
+          },
+        });
       }
     }
   }
 
   private processEntrega(
-    lstPendientesTrue: Array<any>,
-    lstPendientesFalse: Array<any>,
+    itemTrue: Array<any>,
+    itemFalse: Array<any>,
     i: number,
   ) {
-    let itemTrue: any[] = [];
-    let itemFalse: any[] = [];
     for (let x = 0; x < this.arrayAux[i].extra.length; x++) {
       if (this.codigoValido2[i][x] != null) {
         if (this.codigoValido2[i][x]) {
@@ -189,21 +211,6 @@ export class EnCierreDetallePage {
           itemFalse.push(this.arrayAux[i].extra[x]);
         }
       }
-    }
-    if (itemTrue.length > 0) {
-      this.navCtrl.navigateForward(['/tabs/en-cierre/realizado'], {
-        queryParams: {
-          realizados: JSON.stringify(itemTrue),
-          noRealizados: JSON.stringify(itemFalse),
-        },
-      });
-    } else {
-      this.navCtrl.navigateForward(['tabs/en-cierre/no-realizado'], {
-        queryParams: {
-          noRealizados: JSON.stringify(itemFalse),
-          isRealizados: false,
-        },
-      });
     }
   }
 
