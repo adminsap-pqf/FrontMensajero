@@ -89,7 +89,7 @@
       </div>
     </div>
     <div class="btn">
-      <ion-button color="light" expand="block" (click)="finalizar()">
+      <ion-button color="light" expand="block" [disabled]="enviando" (click)="finalizar()">
         FINALIZAR
       </ion-button>
     </div>

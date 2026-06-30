@@ -61,7 +61,7 @@
     <span># {{ totalFotos }} foto<span *ngIf="totalFotos>1">s</span> </span>
   </div>
   <div class="options-content">
-    <ion-button expand="full" class="btnAccept" strong="true" (click)="recibeEyR && !facturaORemision ? mostrar() : pdf()">
+    <ion-button expand="full" class="btnAccept" strong="true" [disabled]="subiendo" (click)="recibeEyR && !facturaORemision ? mostrar() : pdf()">
       Aceptar
     </ion-button>
   </div>
@@ -109,7 +109,7 @@
         </div>
       </div>
       <div class="btn">
-        <button (click)="pdf()">Aceptar</button>
+        <button [disabled]="subiendo" (click)="pdf()">Aceptar</button>
       </div>
     </div>
     <div class="cerrar">

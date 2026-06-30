@@ -29,6 +29,7 @@ export class EscannDocsPage {
   ruta: any[] = ['', ''];
   titulo: string = '';
   totalFotos: number = 0;
+  subiendo: boolean = false;
   usuario = this._login.getUsuario();
 
   constructor(
@@ -85,16 +86,13 @@ export class EscannDocsPage {
     this.totalFotos = this.Documentos.length;
   }
 
-  // Generar PDF
+  // Subir evidencia. El indicador de carga ahora dura lo que dure la subida
+  // real (no un tiempo fijo) y el botón se bloquea para evitar toques dobles.
   pdf() {
-    const loading = document.createElement('ion-loading');
-    loading.message = 'Generando PDF...';
-    loading.spinner = 'circles';
-    loading.duration = 4000;
-
-    document.body.appendChild(loading);
-    loading.present();
-
+    if (this.subiendo) {
+      return;
+    }
+    this.subiendo = true;
     this.esconder();
     this.open();
   }
@@ -102,21 +100,24 @@ export class EscannDocsPage {
   open() {
     const content = this.Documentos.map((data) => data.ruta);
     const imagenes = content.map((ruta) => ruta.split(',')[1]);
-    this.pendientesSubscription = this._pendientes
-      .guardaDocumentacionFotos(
-        imagenes,
-        [this.pendiente],
-        `${this.usuario.idEmpleado}/${this.pendiente}`,
-      )
-      .subscribe({
-        next: (data) => {
-          console.log('Subida exitosa:', data);
-          this.navCtrl.pop(); // Regresa a la página anterior
-        },
-        error: (error) => {
-          console.error('Error al subir imágenes:', error);
-        },
-      });
+
+    this._login.ejecutarConCarga({
+      mensaje: 'Subiendo evidencia…',
+      crearPeticion: () =>
+        this._pendientes.guardaDocumentacionFotos(
+          imagenes,
+          [this.pendiente],
+          `${this.usuario.idEmpleado}/${this.pendiente}`,
+        ),
+      onSuccess: () => {
+        this.subiendo = false;
+        this.navCtrl.pop(); // Regresa a la página anterior
+      },
+      onError: () => {
+        // Se mantiene en la pantalla para reintentar sin perder las fotos.
+        this.subiendo = false;
+      },
+    });
   }
 
   esconder() {

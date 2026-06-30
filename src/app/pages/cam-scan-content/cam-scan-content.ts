@@ -4,6 +4,8 @@ import { PendientesProvider } from '../../../providers/pendientes/pendientes';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'cam-scan-content',
@@ -26,6 +28,7 @@ export class CamScanContentPage {
   entregaRevision: any[] = [];
   realizados: any[] = [];
   noRealizados: any[] = [];
+  finalizando: boolean = false;
 
   constructor(
     private _login: ComunService,
@@ -85,59 +88,86 @@ export class CamScanContentPage {
   }
 
   finalizado(): void {
-    let finalizar:boolean = true;
+    let finalizar: boolean = true;
 
-    if(this.codigoValido.length > 0){
-      for(let item of this.codigoValido){
-        if(!item){
+    if (this.codigoValido.length > 0) {
+      for (let item of this.codigoValido) {
+        if (!item) {
           finalizar = false;
         }
       }
-    }else{
+    } else {
       finalizar = false;
     }
 
-    if(finalizar){
-      console.log(this.realizados);
+    if (!finalizar) {
+      console.log('No se puede finalizar. Algunos códigos no son válidos.');
+      return;
+    }
 
-      if(this.realizados[0].aceptaEyR){
-        for(let i = 0; i < this.realizados.length; i++){
-          this.realizados[i].entregaRevision = this.entregaRevision[i];
-          this.realizados[i].extra = null;
-        }
-      }else{
-        for(let i = 0; i < this.realizados.length; i++){
-          this.realizados[i].extra = null;
-        }
+    // Evita toques repetidos mientras la operación está en curso.
+    if (this.finalizando) {
+      return;
+    }
+    this.finalizando = true;
+
+    console.log(this.realizados);
+
+    if (this.realizados[0].aceptaEyR) {
+      for (let i = 0; i < this.realizados.length; i++) {
+        this.realizados[i].entregaRevision = this.entregaRevision[i];
+        this.realizados[i].extra = null;
       }
+    } else {
+      for (let i = 0; i < this.realizados.length; i++) {
+        this.realizados[i].extra = null;
+      }
+    }
 
-      this._pendientes
-        .cerrarRuta(
+    this._login.ejecutarConCarga({
+      mensaje: 'Finalizando entrega…',
+      crearPeticion: () =>
+        this._pendientes.cerrarRuta(
           this.realizados,
           this.usuario['idEmpleado'],
           this.usuario['usuario'],
-        )
-        .subscribe(
-          (data) => {
-            console.log(data);
-          },
-          (error) => {
-            console.error(error);
-          },
-        );
+        ),
+      verificarEstado: () => this.verificarCierre(),
+      onSuccess: () => {
+        this.finalizando = false;
+        if (this.noRealizados.length > 0) {
+          this.navCtrl.navigateBack(['/tabs/en-cierre/no-realizado'], {
+            queryParams: {
+              noRealizados: JSON.stringify(this.noRealizados),
+              isRealizados: true,
+            },
+          });
+        } else {
+          this.navCtrl.navigateRoot(['/tabs/en-cierre']);
+        }
+      },
+      onError: () => {
+        // Se queda en la pantalla con la evidencia para reintentar.
+        this.finalizando = false;
+      },
+    });
+  }
 
-      if (this.noRealizados.length > 0) {
-        this.navCtrl.navigateBack(['/tabs/en-cierre/no-realizado'], {
-          queryParams: {
-            noRealizados: JSON.stringify(this.noRealizados),
-            isRealizados: true,
-          },
-        });
-      } else {
-        this.navCtrl.navigateRoot(['/tabs/en-cierre']);
-      }
-    } else {
-      console.log('No se puede finalizar. Algunos códigos no son válidos.');
-    }
+  /**
+   * Verifica si el cierre realmente se completó consultando los pendientes
+   * que siguen "En cierre": si ninguno de los folios actuales aparece, el
+   * cierre ya fue procesado por el servidor.
+   */
+  private verificarCierre(): Observable<boolean> {
+    return this._pendientes.enCierre(this.usuario['usuario']).pipe(
+      map((resp: any) => {
+        const lista: any[] = resp?.current ?? [];
+        const folios = this.realizados.map((r: any) => r.folioEvento);
+        const siguenAbiertos = lista.some((p: any) =>
+          folios.includes(p.folioEvento),
+        );
+        return !siguenAbiertos;
+      }),
+    );
   }
 }

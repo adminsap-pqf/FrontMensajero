@@ -16,6 +16,7 @@ export class ColectarEscannComponent {
   nombreCliente: any;
   codigoValido: any[] = [];
   acronimo: any;
+  enviando: boolean = false;
   dataSubscription: Subscription | null = null;
 
   constructor(
@@ -162,32 +163,43 @@ export class ColectarEscannComponent {
         }
       }
 
-      this.dataSubscription = this._pendientes
-        .ejecutarRuta(lstPendientes)
-        .subscribe({
-          next: (data) => {
-            try {
-              // DOCS: Filtra los elementos que no se encuentran en la lista de pendientes
-              const itemsFiltered = this.items.filter(
-                (b) =>
-                  !lstPendientes.some(
-                    (a) => a.folioEvento === b.folioDocumento,
-                  ),
+      // Evita toques repetidos mientras la operación está en curso.
+      if (this.enviando) {
+        return;
+      }
+      this.enviando = true;
+
+      this.comunService.ejecutarConCarga({
+        mensaje: 'Colectando…',
+        crearPeticion: () => this._pendientes.ejecutarRuta(lstPendientes),
+        onSuccess: () => {
+          this.enviando = false;
+          try {
+            // DOCS: Filtra los elementos que no se encuentran en la lista de pendientes
+            const itemsFiltered = this.items.filter(
+              (b) =>
+                !lstPendientes.some((a) => a.folioEvento === b.folioDocumento),
+            );
+            // DOCS: Si aún tiene colectas regresa a la vista anterior
+            if (itemsFiltered.length) {
+              this.navCtrl.navigateBack(
+                ['tabs', 'colectar', 'colectar-detalle'],
+                {
+                  state: { items: JSON.stringify(itemsFiltered) },
+                },
               );
-              // DOCS: Si aún tiene colectas regresa a la vista anterior
-              if (itemsFiltered.length) {
-                this.navCtrl.navigateBack(['tabs', 'colectar', 'colectar-detalle'], {
-                  state: {items: JSON.stringify(itemsFiltered)},
-                });
-              } else {
-                // DOCS: Sino redirige a la vista de colectar-list
-                this.navCtrl.navigateBack(['tabs', 'colectar', 'colectar-list']);
-              }
-            } catch (error) {
-              console.log(error);
+            } else {
+              // DOCS: Sino redirige a la vista de colectar-list
+              this.navCtrl.navigateBack(['tabs', 'colectar', 'colectar-list']);
             }
-          },
-        });
+          } catch (error) {
+            console.log(error);
+          }
+        },
+        onError: () => {
+          this.enviando = false;
+        },
+      });
     }
   }
 

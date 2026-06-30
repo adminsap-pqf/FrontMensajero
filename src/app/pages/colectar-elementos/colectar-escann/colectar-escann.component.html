@@ -81,7 +81,7 @@
       </div>
     </div>
     <div class="btn">
-      <ion-button expand="full" strong="true" class="custom-button" (click)="finalizar()">
+      <ion-button expand="full" strong="true" class="custom-button" [disabled]="enviando" (click)="finalizar()">
         FINALIZAR
       </ion-button>
     </div>

@@ -35,6 +35,7 @@ export class PendientesDetalleComponent {
   numeroValidador: any;
   numeroAyuda: number = 0;
   totalEventos: number = 0;
+  enviando: boolean = false;
 
   constructor(
     public navCtrl: NavController,
@@ -275,15 +276,24 @@ export class PendientesDetalleComponent {
       }
 
       console.log(lstPendientes);
-      this._pendientes.ejecutarRuta(lstPendientes).subscribe(
-        (data) => {
-          console.log(data);
+
+      // Evita toques repetidos mientras la operación está en curso.
+      if (this.enviando) {
+        return;
+      }
+      this.enviando = true;
+
+      this._login.ejecutarConCarga({
+        mensaje: 'Ejecutando ruta…',
+        crearPeticion: () => this._pendientes.ejecutarRuta(lstPendientes),
+        onSuccess: () => {
+          this.enviando = false;
           this.navCtrl.navigateRoot(['/tabs/pendientes/pendientes-list']);
         },
-        (error) => {
-          console.log(error);
+        onError: () => {
+          this.enviando = false;
         },
-      );
+      });
     } else {
       console.log('aun no te terminas');
     }

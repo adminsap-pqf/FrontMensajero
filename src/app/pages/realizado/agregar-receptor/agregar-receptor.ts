@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { PendientesProvider } from '../../../../providers/pendientes/pendientes';
+import { ComunService } from '../../../../providers/comun/comun';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,6 +17,7 @@ export class AgregarReceptorPage {
   nombre: string = '';
   apellido: string = '';
   puesto: string = '';
+  guardando: boolean = false;
   saveSubscription: Subscription | null = null;
   queryParamsSubscripcion: Subscription | null = null;
 
@@ -23,6 +25,7 @@ export class AgregarReceptorPage {
     private navCtrl: NavController,
     private route: ActivatedRoute,
     private _pendientes: PendientesProvider,
+    private _login: ComunService,
   ) {
     this.queryParamsSubscripcion = this.route.queryParams.subscribe({
       next: (params) => {
@@ -37,6 +40,12 @@ export class AgregarReceptorPage {
 
   receptor() {
     if (this.nombre !== '' && this.apellido !== '' && this.puesto !== '') {
+      // Evita toques repetidos mientras se guarda.
+      if (this.guardando) {
+        return;
+      }
+      this.guardando = true;
+
       let personal: any = [
         {
           idPersonal: 0,
@@ -47,12 +56,18 @@ export class AgregarReceptorPage {
         },
       ];
       console.log(personal);
-      this.saveSubscription = this._pendientes
-        .actualizarCliente(personal)
-        .subscribe((data) => {
-          console.log(data);
-        });
-      this.navCtrl.pop();
+
+      this._login.ejecutarConCarga({
+        mensaje: 'Guardando receptor…',
+        crearPeticion: () => this._pendientes.actualizarCliente(personal),
+        onSuccess: () => {
+          this.guardando = false;
+          this.navCtrl.pop();
+        },
+        onError: () => {
+          this.guardando = false;
+        },
+      });
     }
   }
 

@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { ComunService } from '../../../providers/comun/comun';
 import { PendientesProvider } from '../../../providers/pendientes/pendientes';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { forkJoin, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'no-realizado',
@@ -29,6 +30,7 @@ export class NoRealizadoPage {
   i2: any = undefined;
   txtAux: any = '';
   isRealizados: Boolean = false;
+  finalizando: boolean = false;
   queryParamsSubscription: Subscription | null = null;
   pendientesSubscription: Subscription | null = null;
 
@@ -171,33 +173,14 @@ export class NoRealizadoPage {
   finalizado() {
     console.log(this.noRealizados);
     let finalizar: boolean = true;
-    if (this.noRealizados[0].evento != 'Entrega') {
+    const esEntrega = this.noRealizados[0].evento == 'Entrega';
+
+    // Validación de que todos los folios tengan justificación.
+    if (!esEntrega) {
       for (let item of this.codigoValido) {
         if (!item) {
           finalizar = false;
         }
-      }
-
-      if (finalizar) {
-        let cont = 0;
-        for (let item of this.noRealizados) {
-          item.tipoJustificacion = this.justificaciones[cont].razon;
-          item.justificacion = this.justificaciones[cont].justificacion;
-          cont++;
-        }
-
-        this._pendientes
-          .cerrarRuta(
-            this.noRealizados,
-            this.usuario['idEmpleado'],
-            this.usuario['usuario'],
-          )
-          .subscribe(
-            (data: any) => {},
-            (error: any) => {
-              console.log(error);
-            },
-          );
       }
     } else {
       for (let item of this.codigoValido) {
@@ -207,70 +190,106 @@ export class NoRealizadoPage {
           }
         }
       }
+    }
 
-      if (finalizar) {
-        if (!this.isRealizados) {
-          let i = 0;
-          for (let item of this.noRealizados) {
-            item.tipoJustificacion = this.justificaciones[i][0].razon;
-            item.justificacion = this.justificaciones[i][0].justificacion;
-            item.extra = null;
-            item.realizadoTxt = 'No realizada';
-            i++;
-          }
-          console.log(this.noRealizados);
-          this._pendientes
-            .cerrarRuta(
-              this.noRealizados,
-              this.usuario['idEmpleado'],
-              this.usuario['usuario'],
-            )
-            .subscribe(
-              (data: any) => {},
-              (error: any) => {
-                console.log(error);
-              },
-            );
-        }
+    if (!finalizar) {
+      return;
+    }
 
-        let lstComentaiosRutaDP: any[] = [];
-        let cont = 0;
+    // Evita toques repetidos mientras la operación está en curso.
+    if (this.finalizando) {
+      return;
+    }
+    this.finalizando = true;
+
+    // Arma las peticiones según el tipo de evento, pero la navegación ocurre
+    // una sola vez y solo cuando el servidor confirma (dentro de onSuccess).
+    let peticiones: Observable<any>[] = [];
+
+    if (!esEntrega) {
+      let cont = 0;
+      for (let item of this.noRealizados) {
+        item.tipoJustificacion = this.justificaciones[cont].razon;
+        item.justificacion = this.justificaciones[cont].justificacion;
+        cont++;
+      }
+      peticiones.push(
+        this._pendientes.cerrarRuta(
+          this.noRealizados,
+          this.usuario['idEmpleado'],
+          this.usuario['usuario'],
+        ),
+      );
+    } else {
+      if (!this.isRealizados) {
+        let i = 0;
         for (let item of this.noRealizados) {
-          let cont2 = 0;
-          for (let item2 of item.folioProducto.split(',')) {
-            let comentaiosRutaDP: any = {
-              razonesEntrega: this.justificaciones[cont][cont2].razon,
-              tipoJustificacion:
-                this.justificaciones[cont][cont2].justificacion,
-              rutaDP: item.folioEvento,
-              folioFactura: item2,
-            };
-            lstComentaiosRutaDP.push(comentaiosRutaDP);
-            cont2++;
-          }
-          cont++;
+          item.tipoJustificacion = this.justificaciones[i][0].razon;
+          item.justificacion = this.justificaciones[i][0].justificacion;
+          item.extra = null;
+          item.realizadoTxt = 'No realizada';
+          i++;
         }
-
-        this._pendientes
-          .cerrarRutaDPNoRealizados(lstComentaiosRutaDP)
-          .subscribe({
-            next: (data: any) => {
-              this.navCtrl.navigateRoot(['tabs/en-cierre']);
-            },
-            error: (error: any) => {
-              console.log(error);
-            },
-          });
+        peticiones.push(
+          this._pendientes.cerrarRuta(
+            this.noRealizados,
+            this.usuario['idEmpleado'],
+            this.usuario['usuario'],
+          ),
+        );
       }
+
+      let lstComentaiosRutaDP: any[] = [];
+      let cont = 0;
+      for (let item of this.noRealizados) {
+        let cont2 = 0;
+        for (let item2 of item.folioProducto.split(',')) {
+          let comentaiosRutaDP: any = {
+            razonesEntrega: this.justificaciones[cont][cont2].razon,
+            tipoJustificacion: this.justificaciones[cont][cont2].justificacion,
+            rutaDP: item.folioEvento,
+            folioFactura: item2,
+          };
+          lstComentaiosRutaDP.push(comentaiosRutaDP);
+          cont2++;
+        }
+        cont++;
+      }
+      peticiones.push(
+        this._pendientes.cerrarRutaDPNoRealizados(lstComentaiosRutaDP),
+      );
     }
 
-    if (finalizar) {
-      if (this.isRealizados) {
-        this.navCtrl.pop();
-      } else {
-        this.navCtrl.pop();
-      }
-    }
+    this._login.ejecutarConCarga({
+      mensaje: 'Finalizando…',
+      crearPeticion: () => forkJoin(peticiones),
+      verificarEstado: () => this.verificarCierre(),
+      onSuccess: () => {
+        this.finalizando = false;
+        this.navCtrl.navigateRoot(['tabs/en-cierre']);
+      },
+      onError: () => {
+        // Se queda en la pantalla para reintentar sin perder la captura.
+        this.finalizando = false;
+      },
+    });
+  }
+
+  /**
+   * Verifica si el cierre ya se completó: si ninguno de los folios sigue en la
+   * lista "En cierre", el servidor ya procesó la operación.
+   */
+  private verificarCierre(): Observable<boolean> {
+    return this._pendientes.enCierre(this.usuario['usuario']).pipe(
+      map((resp: any) => {
+        const lista: any[] = resp?.current ?? [];
+        const folios = this.noRealizados.map((r: any) => r.folioEvento);
+        const siguenAbiertos = lista.some((p: any) =>
+          folios.includes(p.folioEvento),
+        );
+        return !siguenAbiertos;
+      }),
+    );
   }
 
   ionViewWillLeave() {
