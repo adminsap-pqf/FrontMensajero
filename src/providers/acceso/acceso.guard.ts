@@ -16,9 +16,15 @@ export class AccesoGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean | UrlTree {
-    if (this.acceso.tieneAccesoVigente()) {
-      return true;
-    }
-    return this.router.createUrlTree(['/activacion']);
+    // TOKEN DESACTIVADO PARA PRODUCCIÓN: se permite el acceso sin código de
+    // activación para que los usuarios puedan entrar sin problemas.
+    // Para RE-ACTIVAR el sistema de token, elimina este `return true;` y
+    // descomenta el bloque de abajo.
+    return true;
+
+    // if (this.acceso.tieneAccesoVigente()) {
+    //   return true;
+    // }
+    // return this.router.createUrlTree(['/activacion']);
   }
 }

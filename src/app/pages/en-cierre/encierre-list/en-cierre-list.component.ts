@@ -29,6 +29,7 @@ export class EnCierreListComponent {
   totalFolio: any[] = [];
   totalPendientes: number = 0;
   usuario = this._login.getUsuario();
+  cargando: boolean = false;
   pendientesSubscription: Subscription | null = null;
 
   constructor(
@@ -48,11 +49,15 @@ export class EnCierreListComponent {
     this.totalPendientes = 0;
     this.pendientesAgrupados = [];
     this.enCierre = [];
+    // El spinner arranca desde antes del setTimeout: el usuario ve "cargando"
+    // durante la espera interna + la respuesta del servidor.
+    this.cargando = true;
     const us = this.usuario['usuario'];
 
     setTimeout(() => {
       this.pendientesSubscription = this._pendientes.enCierre(us).subscribe({
         next: (data: any) => {
+          this.cargando = false;
           data.current.forEach((element: any) => {
             this.enCierre.push(element);
           });
@@ -155,6 +160,7 @@ export class EnCierreListComponent {
           this.totalPendientes = this.arrayAux.length;
         },
         error: (error: any) => {
+          this.cargando = false;
           console.log(error);
         },
       });

@@ -44,8 +44,15 @@ export class CamScanContentPage {
     });
   }
 
-  selectReceptor2(index: number): void {
-    this.codigoValido[index] = true;
+  ionViewWillEnter(): void {
+    // Al regresar de escann-docs: la fila se marca como completada SOLO si la
+    // subida de evidencia terminó con confirmación del servidor. Si falló o el
+    // usuario regresó sin subir, la cámara sigue disponible para reintentar.
+    const idx = this._login.evidenciaSubidaIndex;
+    if (idx !== null && idx !== undefined) {
+      this.codigoValido[idx] = true;
+      this._login.evidenciaSubidaIndex = null;
+    }
   }
 
   esconder(): void {
@@ -69,7 +76,10 @@ export class CamScanContentPage {
 
       console.log('Foto -> ', obj);
       console.log(this.realizados[0]?.acturaORemision);
-      // Navegar a la página de EscannDocs
+      // Navegar a la página de EscannDocs. La fila ya NO se marca aquí: se
+      // marca en ionViewWillEnter cuando la subida se confirma (antes se
+      // marcaba al tomar la foto, aunque la subida fallara, y la cámara
+      // desaparecía sin haber evidencia real).
       this.navCtrl.navigateForward(['tabs/en-cierre/escann-docs'], {
         queryParams: {
           documentos: JSON.stringify(obj),
@@ -80,8 +90,6 @@ export class CamScanContentPage {
           facturaORemision: this.realizados[0]?.facturaORemision,
         },
       });
-
-      this.selectReceptor2(index);
     } catch (error) {
       console.error('Error al abrir la cámara:', error);
     }

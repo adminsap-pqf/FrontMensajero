@@ -14,13 +14,36 @@
     <div>Receptores</div>
   </div>
 
-  <div class="receptor-content">
+  <ion-searchbar
+    placeholder="Buscar receptor"
+    inputmode="search"
+    [debounce]="150"
+    (ionInput)="buscarReceptor($event)"
+    (ionClear)="buscarReceptor($event)"
+  ></ion-searchbar>
+
+  <div
+    *ngIf="cargando"
+    style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      gap: 12px;
+    "
+  >
+    <ion-spinner name="crescent" style="width: 44px; height: 44px"></ion-spinner>
+    <span style="opacity: 0.7">Cargando receptores…</span>
+  </div>
+
+  <div class="receptor-content" *ngIf="!cargando">
     <ion-list>
       <ion-item-sliding
         #item
-        *ngFor="let receptor of receptoresList; let i =index"
+        *ngFor="let receptor of receptoresFiltrados; let i =index"
       >
-        <ion-item (click)="selectReceptor(i)">
+        <ion-item (click)="selectReceptor(receptor)">
           <div class="receptor-item">
             <div class="info-receptor">
               <p class="name">
@@ -43,14 +66,14 @@
             <div class="mark-receptor">
               <img
                 width="19px"
-                *ngIf="i==receptorSeleceted"
+                *ngIf="receptor === receptorSeleccionado"
                 class="g-animate-opacity"
                 src="./assets/img/imgs/RADIO_ACTIVO.svg"
                 alt=""
               />
               <img
                 width="19px"
-                *ngIf="i!=receptorSeleceted"
+                *ngIf="receptor !== receptorSeleccionado"
                 class="g-animate-zoom"
                 src="./assets/img/imgs/RADIO.svg"
                 alt=""
@@ -60,11 +83,17 @@
         </ion-item>
         <ion-item-options>
           <div class="btnEliminar">
-            <ion-button expand="full" class="btnDeletedR" (click)="BorrarReceptor(i)">Eliminar</ion-button>
+            <ion-button expand="full" class="btnDeletedR" (click)="BorrarReceptor(receptor)">Eliminar</ion-button>
           </div>
         </ion-item-options>
       </ion-item-sliding>
     </ion-list>
+    <div
+      *ngIf="receptoresFiltrados.length === 0 && textoBusqueda"
+      style="text-align: center; padding: 16px; opacity: 0.7"
+    >
+      Sin resultados para "{{ textoBusqueda }}"
+    </div>
   </div>
 
   <div class="btn">

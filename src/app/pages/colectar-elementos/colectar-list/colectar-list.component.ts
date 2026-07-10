@@ -16,6 +16,7 @@ export class ColectarListComponent {
   pendientes: any[] = [];
   pendientesAgrupados: any[] = [];
   totalPendientes: number = 0;
+  cargando: boolean = false;
   obtenerPendientesCerradosSubscription: Subscription | null = null;
 
   constructor(
@@ -34,12 +35,14 @@ export class ColectarListComponent {
     this.totalPendientes = 0;
     this.pendientes = [];
     this.pendientesAgrupados = [];
+    this.cargando = true;
     let us = this.usuario['usuario'];
 
     this.obtenerPendientesCerradosSubscription = this._pendientes
       .elementosColectar(us)
       .subscribe({
         next: (data) => {
+          this.cargando = false;
           console.log(data.current);
           if (data.current) {
             this.pendientes = [...this.pendientes, ...data.current];
@@ -94,6 +97,7 @@ export class ColectarListComponent {
           }
         },
         error: (error) => {
+          this.cargando = false;
           console.error(error);
         },
       });

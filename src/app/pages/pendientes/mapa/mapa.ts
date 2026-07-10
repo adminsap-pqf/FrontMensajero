@@ -232,13 +232,26 @@ export class MapaPage {
    * @description Muestra el aviso de que el destino no tiene ubicación registrada.
    * **/
   async avisarDestinoSinUbicacion() {
+    // Se incluyen los IDs del destino (sobre todo idHorario = FK01_Direccion) para
+    // que se puedan reportar/buscar en la BD, ya que en este caso NO se llega al
+    // botón "Generar Log" (validarUbicacion hace return antes de abrir openbottom5).
+    const item = this.items && this.items.length ? this.items[0] : null;
+    const idHorario = item ? item.idHorario : null;
+    const idCliente = item ? item.idCliente : null;
+    const idRuta = item ? item.idRuta : null;
+
     await Dialog.alert({
       title: 'Destino sin ubicación registrada',
       message:
         'Este destino no tiene latitud/longitud registradas correctamente en ' +
         'el sistema, por lo que no se puede validar tu cercanía ni finalizar el ' +
-        'recorrido. Repórtalo con Soporte a la Produccion, para que actualicen' +
-        'la información en la base de datos.',
+        'recorrido. Repórtalo con Soporte a la Produccion, para que actualicen ' +
+        'la información en la base de datos.\n\n' +
+        'Datos para el reporte:\n' +
+        `Destino: ${this.nombreDestino}\n` +
+        `idHorario (FK01_Direccion): ${idHorario}\n` +
+        `idCliente: ${idCliente}\n` +
+        `idRuta: ${idRuta}`,
     });
   }
 

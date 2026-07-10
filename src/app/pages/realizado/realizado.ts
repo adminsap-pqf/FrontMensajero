@@ -12,17 +12,21 @@ import { Subscription } from 'rxjs';
 })
 export class RealizadoPage {
     idCliente!: number;
-    item = [];
+    item: any = [];
     noRealizados!: any[];
     nombreReceptor: string = '';
-    numero: number = 0;
     openbottom2: boolean = false;
     openbottom: boolean = false;
     posi!: number;
     queryParamsSubscription: Subscription | null = null;
     realizados!: any[];
-    receptorSeleceted = 2000;
+    // Selección por objeto (no por índice) para que funcione con la lista filtrada.
+    receptorSeleccionado: any = null;
+    receptorABorrar: any = null;
     receptoresList: any[] = [];
+    receptoresFiltrados: any[] = [];
+    textoBusqueda: string = '';
+    cargando: boolean = false;
     usuario = this._login.getUsuario();
 
     constructor(
@@ -47,34 +51,76 @@ export class RealizadoPage {
 
     private loadReceptores() {
         this.receptoresList = [];
+        this.receptoresFiltrados = [];
 
         if (this.realizados && this.realizados.length > 0) {
+            this.cargando = true;
             this._pendientes
                 .clientes(this.realizados[0].idCliente)
-                .subscribe((data: any) => {
-                    console.log(data);
-                    data.current.forEach((element: any) => {
-                        this.receptoresList.push(element);
-                    });
+                .subscribe({
+                    next: (data: any) => {
+                        this.cargando = false;
+                        console.log(data);
+                        data.current.forEach((element: any) => {
+                            this.receptoresList.push(element);
+                        });
+                        this.aplicarFiltro();
+                    },
+                    error: (error: any) => {
+                        this.cargando = false;
+                        console.log(error);
+                    },
                 });
         }
     }
 
-    selectReceptor(i: any) {
-        this.receptorSeleceted = i;
+    buscarReceptor(event: any) {
+        this.textoBusqueda =
+            event?.detail?.value ?? event?.target?.value ?? '';
+        this.aplicarFiltro();
+    }
+
+    /** Minúsculas y sin acentos, para buscar por similitud sin exactitud. */
+    private normalizar(txt: any): string {
+        return String(txt ?? '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '');
+    }
+
+    /**
+     * Filtra por nombre y puesto: cada palabra escrita debe aparecer en el
+     * receptor (sin importar mayúsculas, acentos ni el orden de las palabras).
+     */
+    aplicarFiltro() {
+        const consulta = this.normalizar(this.textoBusqueda).trim();
+        if (!consulta) {
+            this.receptoresFiltrados = [...this.receptoresList];
+            return;
+        }
+        const palabras = consulta.split(/\s+/);
+        this.receptoresFiltrados = this.receptoresList.filter((r) => {
+            const texto =
+                this.normalizar(r.nombre) + ' ' + this.normalizar(r.puesto);
+            return palabras.every((p) => texto.includes(p));
+        });
+    }
+
+    selectReceptor(receptor: any) {
+        this.receptorSeleccionado = receptor;
         this.openbottom = true;
-        this.nombreReceptor = this.receptoresList[i].nombre;
-        this.item = this.receptoresList[i];
+        this.nombreReceptor = receptor.nombre;
+        this.item = receptor;
     }
 
     esconder() {
         this.openbottom = false;
     }
 
-    BorrarReceptor(i: any) {
-        this.numero = i;
+    BorrarReceptor(receptor: any) {
+        this.receptorABorrar = receptor;
         this.openbottom2 = true;
-        this.nombreReceptor = this.receptoresList[i].nombre;
+        this.nombreReceptor = receptor.nombre;
     }
 
     receptor() {
@@ -86,14 +132,18 @@ export class RealizadoPage {
     }
 
     enviarAFirma() {
+        if (!this.receptorSeleccionado) {
+            return;
+        }
+
         let lstPendientesTrue: any[] = [];
         let lstPendientesFalse: any[] = [];
 
         for (let i = 0; i < this.realizados.length; i++) {
             this.realizados[i].personaRecibio =
-                this.receptoresList[this.receptorSeleceted].nombre;
+                this.receptorSeleccionado.nombre;
             this.realizados[i].puestoPersonaRecibio =
-                this.receptoresList[this.receptorSeleceted].puesto;
+                this.receptorSeleccionado.puesto;
             this.realizados[i].realizadoTxt = 'Realizada';
             lstPendientesTrue.push(Object.assign(this.realizados[i]));
         }
@@ -118,14 +168,26 @@ export class RealizadoPage {
     }
 
     eliminar() {
-        let arrayAux: any[] = [];
+        if (!this.receptorABorrar) {
+            this.openbottom2 = false;
+            return;
+        }
 
-        this.receptoresList[this.numero].borrar = true;
-        arrayAux.push(Object.assign(this.receptoresList[this.numero]));
+        const receptor = this.receptorABorrar;
+        receptor.borrar = true;
 
-        this._pendientes.actualizarCliente(arrayAux).subscribe((data: any) => {
-            this.receptoresList.splice(this.numero, 1);
-        });
+        this._pendientes
+            .actualizarCliente([receptor])
+            .subscribe((data: any) => {
+                const idx = this.receptoresList.indexOf(receptor);
+                if (idx > -1) {
+                    this.receptoresList.splice(idx, 1);
+                }
+                if (this.receptorSeleccionado === receptor) {
+                    this.receptorSeleccionado = null;
+                }
+                this.aplicarFiltro();
+            });
 
         this.openbottom2 = false;
     }

@@ -17,6 +17,7 @@ export class PendientesListComponent {
   totalPendientes: number = 0;
   pendientesSubscription: Subscription | null = null;
   diaSemana: number = new Date().getDay();
+  cargando: boolean = false;
 
   constructor(
     private _login: ComunService,
@@ -32,9 +33,11 @@ export class PendientesListComponent {
     this.totalPendientes = 0;
     this.pendientesAgrupados = [];
     this.pendientes = [];
+    this.cargando = true;
     let us = this.usuario['usuario'];
     this.pendientesSubscription = this._pendientes.pendientes(us).subscribe({
       next: (data) => {
+        this.cargando = false;
         console.log('data', data.current);
         data.current.forEach((element: any) => {
           this.pendientes.push(element);
@@ -172,6 +175,7 @@ export class PendientesListComponent {
         this.totalPendientes = this.arrayAux.length;
       },
       error: (error) => {
+        this.cargando = false;
         console.log(error);
       },
     });

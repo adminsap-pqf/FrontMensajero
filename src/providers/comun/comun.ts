@@ -7,6 +7,7 @@ import {
   LoadingController,
   ToastController,
 } from '@ionic/angular';
+import { Network } from '@capacitor/network';
 import { URL } from '../config/config.services'; // Trae las IPs
 
 /**
@@ -55,6 +56,13 @@ export class ComunService {
 
   usuario: string = '';
   // loginForm: FormGroup;
+
+  /**
+   * Índice del folio cuya evidencia se subió con éxito en escann-docs.
+   * cam-scan-content lo lee al regresar (ionViewWillEnter) para marcar la
+   * fila como completada SOLO cuando la subida realmente terminó.
+   */
+  evidenciaSubidaIndex: number | null = null;
 
   constructor(
     private http: HttpClient,

@@ -29,6 +29,7 @@ export class CerradosListComponent {
   totalPendientes: number = 0;
   _nombre: string = '';
   showUno: boolean = false;
+  cargando: boolean = false;
   obtenerPendientesCerradosSubscription: Subscription | null = null;
 
   constructor(
@@ -43,10 +44,17 @@ export class CerradosListComponent {
     console.log('entró');
     let us = this.usuario['usuario'];
     this.arrayAux = [];
+    // Se limpian también estas listas: antes no se reiniciaban y los
+    // elementos se duplicaban cada vez que se volvía a entrar a la pestaña.
+    this.cerrados = [];
+    this.cerradosAgrupados = [];
+    this.data = [];
+    this.cargando = true;
     this.obtenerPendientesCerradosSubscription = this._pendientes
       .obtenerPendientesCerrados(us)
       .subscribe({
         next: (data) => {
+          this.cargando = false;
           console.log('ya recibió los datos', data);
           data.current.forEach((element: any) => {
             this.cerrados.push(element);
@@ -162,6 +170,7 @@ export class CerradosListComponent {
           this.totalPendientes = this.arrayAux.length;
         },
         error: (error) => {
+          this.cargando = false;
           console.log(error);
         },
       });

@@ -60,62 +60,59 @@
   <div class="total ion-padding">
     <span># {{ totalFotos }} foto<span *ngIf="totalFotos>1">s</span> </span>
   </div>
+  <!-- Selección Entrega / Entrega y Revisión inline (antes era una ventana
+       emergente con un segundo botón Aceptar; ahora es un solo paso). -->
+  <div
+    class="entregaRevision"
+    *ngIf="recibeEyR && !facturaORemision"
+    style="display: flex; justify-content: center; gap: 24px; padding: 8px 0"
+  >
+    <div class="mark-receptor" (click)="selectEntrega()">
+      <img
+        width="19px"
+        *ngIf="conforme"
+        class="g-animate-opacity"
+        src="./assets/img/imgs/RADIO_ACTIVO.svg"
+        alt=""
+      />
+      <img
+        width="19px"
+        *ngIf="!conforme"
+        class="g-animate-zoom"
+        src="./assets/img/imgs/RADIO.svg"
+        alt=""
+      />
+      <span>Entrega</span>
+    </div>
+
+    <div class="mark-receptor" (click)="selectERevision()">
+      <img
+        width="19px"
+        *ngIf="!conforme"
+        class="g-animate-opacity"
+        src="./assets/img/imgs/RADIO_ACTIVO.svg"
+        alt=""
+      />
+      <img
+        width="19px"
+        *ngIf="conforme"
+        class="g-animate-zoom"
+        src="./assets/img/imgs/RADIO.svg"
+        alt=""
+      />
+      <span>Entrega y Revisión</span>
+    </div>
+  </div>
+
   <div class="options-content">
-    <ion-button expand="full" class="btnAccept" strong="true" [disabled]="subiendo" (click)="recibeEyR && !facturaORemision ? mostrar() : pdf()">
-      Aceptar
+    <ion-button
+      expand="full"
+      class="btnAccept"
+      strong="true"
+      [disabled]="subiendo || totalFotos === 0"
+      (click)="pdf()"
+    >
+      Aceptar y subir
     </ion-button>
   </div>
 </ion-content>
-
-<div class="cortinaEC" *ngIf="openbottom" (click)="esconder()"></div>
-<div [ngClass]="'menudespEC '+(openbottom?'animate-bottomEC':'hide-bottomEC')">
-  <div class="content">
-    <div class="costumers">
-      <div class="entregaRevision">
-        <div class="mark-receptor" (click)="selectEntrega()">
-          <img
-            width="19px"
-            *ngIf="conforme"
-            class="g-animate-opacity"
-            src="./assets/img/imgs/RADIO_ACTIVO.svg"
-            alt=""
-          />
-          <img
-            width="19px"
-            *ngIf="!conforme"
-            class="g-animate-zoom"
-            src="./assets/img/imgs/RADIO.svg"
-            alt=""
-          />
-          <span>Entrega</span>
-        </div>
-
-        <div class="mark-receptor" (click)="selectERevision()">
-          <img
-            width="19px"
-            *ngIf="!conforme"
-            class="g-animate-opacity"
-            src="./assets/img/imgs/RADIO_ACTIVO.svg"
-            alt=""
-          />
-          <img
-            width="19px"
-            *ngIf="conforme"
-            class="g-animate-zoom"
-            src="./assets/img/imgs/RADIO.svg"
-            alt=""
-          />
-          <span>Entrega y Revisión</span>
-        </div>
-      </div>
-      <div class="btn">
-        <button [disabled]="subiendo" (click)="pdf()">Aceptar</button>
-      </div>
-    </div>
-    <div class="cerrar">
-      <button (click)="esconder()">
-        <span> Cancelar </span>
-      </button>
-    </div>
-  </div>
-</div>

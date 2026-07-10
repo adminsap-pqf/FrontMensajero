@@ -22,7 +22,6 @@ export class EscannDocsPage {
   img: any;
   index: number = 0;
   nombreArchivo: string = '';
-  openbottom = false;
   pendiente: any;
   pendientesSubscription: Subscription | null = null;
   recibeEyR: boolean = false;
@@ -86,14 +85,13 @@ export class EscannDocsPage {
     this.totalFotos = this.Documentos.length;
   }
 
-  // Subir evidencia. El indicador de carga ahora dura lo que dure la subida
-  // real (no un tiempo fijo) y el botón se bloquea para evitar toques dobles.
+  // Subir evidencia con UN solo botón. El indicador de carga dura lo que dure
+  // la subida real y el botón se bloquea para evitar toques dobles.
   pdf() {
-    if (this.subiendo) {
+    if (this.subiendo || this.Documentos.length === 0) {
       return;
     }
     this.subiendo = true;
-    this.esconder();
     this.open();
   }
 
@@ -103,6 +101,8 @@ export class EscannDocsPage {
 
     this._login.ejecutarConCarga({
       mensaje: 'Subiendo evidencia…',
+      //TIEMPO DE CARGA
+      segundosTimeout: 120,
       crearPeticion: () =>
         this._pendientes.guardaDocumentacionFotos(
           imagenes,
@@ -111,6 +111,9 @@ export class EscannDocsPage {
         ),
       onSuccess: () => {
         this.subiendo = false;
+        // Avisa a cam-scan-content que ESTE folio ya tiene evidencia subida,
+        // para que marque la fila solo con la confirmación del servidor.
+        this._login.evidenciaSubidaIndex = this.index;
         this.navCtrl.pop(); // Regresa a la página anterior
       },
       onError: () => {
@@ -118,14 +121,6 @@ export class EscannDocsPage {
         this.subiendo = false;
       },
     });
-  }
-
-  esconder() {
-    this.openbottom = false;
-  }
-
-  mostrar() {
-    this.openbottom = true;
   }
 
   selectEntrega() {
