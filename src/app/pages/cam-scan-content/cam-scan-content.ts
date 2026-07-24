@@ -4,8 +4,6 @@ import { PendientesProvider } from '../../../providers/pendientes/pendientes';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'cam-scan-content',
@@ -121,6 +119,9 @@ export class CamScanContentPage {
 
     console.log(this.realizados);
 
+    // El mapeo de entregaRevision/extra depende del índice y se hace UNA sola
+    // vez aquí. Los reintentos usan enviarCierre() para no volver a mapear sobre
+    // una lista ya recortada (los índices se desalinearían).
     if (this.realizados[0].aceptaEyR) {
       for (let i = 0; i < this.realizados.length; i++) {
         this.realizados[i].entregaRevision = this.entregaRevision[i];
@@ -132,50 +133,76 @@ export class CamScanContentPage {
       }
     }
 
-    this._login.ejecutarConCarga({
-      mensaje: 'Finalizando entrega…',
-      crearPeticion: () =>
-        this._pendientes.cerrarRuta(
-          this.realizados,
-          this.usuario['idEmpleado'],
-          this.usuario['usuario'],
-        ),
-      verificarEstado: () => this.verificarCierre(),
-      onSuccess: () => {
-        this.finalizando = false;
-        if (this.noRealizados.length > 0) {
-          this.navCtrl.navigateBack(['/tabs/en-cierre/no-realizado'], {
-            queryParams: {
-              noRealizados: JSON.stringify(this.noRealizados),
-              isRealizados: true,
-            },
-          });
-        } else {
-          this.navCtrl.navigateRoot(['/tabs/en-cierre']);
-        }
-      },
-      onError: () => {
-        // Se queda en la pantalla con la evidencia para reintentar.
-        this.finalizando = false;
-      },
-    });
+    this.enviarCierre();
   }
 
   /**
-   * Verifica si el cierre realmente se completó consultando los pendientes
-   * que siguen "En cierre": si ninguno de los folios actuales aparece, el
-   * cierre ya fue procesado por el servidor.
+   * Envía la lista actual de realizados al back. Se reutiliza en los reintentos:
+   * si hubo cierre parcial, `this.realizados` ya quedó recortada solo a los
+   * folios que faltan, así que un reintento manda únicamente esos.
    */
-  private verificarCierre(): Observable<boolean> {
-    return this._pendientes.enCierre(this.usuario['usuario']).pipe(
-      map((resp: any) => {
-        const lista: any[] = resp?.current ?? [];
-        const folios = this.realizados.map((r: any) => r.folioEvento);
-        const siguenAbiertos = lista.some((p: any) =>
-          folios.includes(p.folioEvento),
+  private enviarCierre(): void {
+    this.finalizando = true;
+    // Opción C: se envían los folios en tandas pequeñas secuenciales, con un
+    // overlay bloqueante que muestra el avance para que el usuario no vuelva a
+    // picar. Cada tanda usa el cierre por-folio idempotente de Fase 1.
+    this._login
+      .ejecutarPorTandas({
+        items: this.realizados,
+        folioDe: (item: any) => item.folioEvento,
+        enviarTanda: (tanda: any[]) =>
+          this._pendientes.cerrarRuta(
+            tanda,
+            this.usuario['idEmpleado'],
+            this.usuario['usuario'],
+          ),
+        tamanoTanda: 1,
+        // Folios pesados (muchas piezas Estandares → cientos de inserts + PDF +
+        // correo) pueden tardar >30s; sin este margen el front los marcaría como
+        // fallidos aunque el back sí los cerró, y un reintento duplicaría inserts.
+        segundosTimeoutTanda: 200,
+        mensaje: 'Cerrando pendientes…',
+      })
+      .then((resumen) => {
+        this.finalizando = false;
+
+        // Todo cerró.
+        if (resumen.foliosFallidos.length === 0) {
+          this.avanzarTrasCierre();
+          return;
+        }
+
+        // Cierre parcial: dejamos SOLO los folios que faltan y reintentamos esos.
+        // Los ya cerrados no se reenvían (y por idempotencia tampoco se duplican).
+        const fallidos = new Set(resumen.foliosFallidos);
+        this.realizados = this.realizados.filter((p) =>
+          fallidos.has(p.folioEvento),
         );
-        return !siguenAbiertos;
-      }),
-    );
+        this._login.mostrarCierreParcial(
+          resumen.cerrados,
+          resumen.total,
+          () => this.enviarCierre(),
+          () => this.avanzarTrasCierre(),
+        );
+      })
+      .catch(() => {
+        // Se queda en la pantalla con la evidencia para reintentar.
+        this.finalizando = false;
+      });
   }
+
+  /** Navega según queden o no pendientes 'No realizados' por justificar. */
+  private avanzarTrasCierre(): void {
+    if (this.noRealizados.length > 0) {
+      this.navCtrl.navigateBack(['/tabs/en-cierre/no-realizado'], {
+        queryParams: {
+          noRealizados: JSON.stringify(this.noRealizados),
+          isRealizados: true,
+        },
+      });
+    } else {
+      this.navCtrl.navigateRoot(['/tabs/en-cierre']);
+    }
+  }
+
 }

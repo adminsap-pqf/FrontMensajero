@@ -159,11 +159,11 @@ export class EnCierreDetallePage {
   receptor() {
     let itemTrue: any[] = [];
     let itemFalse: any[] = [];
-    let hayEntrega = false;
 
-    // Acumula los folios de TODOS los Packing Lists antes de navegar.
-    // (Antes processEntrega navegaba dentro del ciclo y solo se procesaba
-    //  el primer Packing List; los demás quedaban en 'EnEjecucion'.)
+    // Acumula los folios de TODOS los eventos antes de navegar. 'Entrega' arma
+    // sus extras (Packing Lists) en processEntrega; los demás eventos —Entrega
+    // especial, Revisión, Cobro, Recolección— se clasifican aquí por su
+    // codigoValido.
     for (let i = 0; i < this.arrayAux.length; i++) {
       if (this.arrayAux[i].evento !== 'Entrega') {
         if (this.codigoValido[i]) {
@@ -174,27 +174,28 @@ export class EnCierreDetallePage {
           itemFalse.push({...this.arrayAux[i]});
         }
       } else {
-        hayEntrega = true;
         this.processEntrega(itemTrue, itemFalse, i);
       }
     }
 
-    if (hayEntrega) {
-      if (itemTrue.length > 0) {
-        this.navCtrl.navigateForward(['/tabs/en-cierre/realizado'], {
-          queryParams: {
-            realizados: JSON.stringify(itemTrue),
-            noRealizados: JSON.stringify(itemFalse),
-          },
-        });
-      } else {
-        this.navCtrl.navigateForward(['tabs/en-cierre/no-realizado'], {
-          queryParams: {
-            noRealizados: JSON.stringify(itemFalse),
-            isRealizados: false,
-          },
-        });
-      }
+    // Antes la navegación estaba condicionada a que hubiera un evento 'Entrega'
+    // (candado hayEntrega): por eso la Entrega especial y los demás tipos no
+    // avanzaban con FINALIZAR. Ahora navega según haya realizadas o no, para
+    // TODOS los tipos (Entrega especial también lleva receptor + firma).
+    if (itemTrue.length > 0) {
+      this.navCtrl.navigateForward(['/tabs/en-cierre/realizado'], {
+        queryParams: {
+          realizados: JSON.stringify(itemTrue),
+          noRealizados: JSON.stringify(itemFalse),
+        },
+      });
+    } else {
+      this.navCtrl.navigateForward(['tabs/en-cierre/no-realizado'], {
+        queryParams: {
+          noRealizados: JSON.stringify(itemFalse),
+          isRealizados: false,
+        },
+      });
     }
   }
 

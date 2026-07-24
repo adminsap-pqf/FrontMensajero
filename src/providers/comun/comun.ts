@@ -123,6 +123,122 @@ export class ComunService {
   }
 
   /**
+   * Opción C: envía una lista grande en TANDAS pequeñas, una tras otra, con un
+   * overlay bloqueante que muestra el avance ("Cerrando… 3 de 8"). Bloquear la
+   * pantalla evita que el usuario vuelva a picar creyendo que no pasó nada.
+   *
+   * Cada tanda es una petición liviana → el servidor no se satura. Una tanda que
+   * falle no detiene al resto: sus folios se marcan como fallidos (siguen "En
+   * cierre" en el servidor, así que reintentarlos es seguro por idempotencia).
+   *
+   * Devuelve el resumen para que la pantalla decida navegar o reintentar solo
+   * los faltantes. NO navega ni muestra alertas por su cuenta.
+   */
+  async ejecutarPorTandas(opciones: {
+    items: any[];
+    folioDe: (item: any) => string;
+    enviarTanda: (tanda: any[]) => Observable<any>;
+    tamanoTanda?: number;
+    mensaje?: string;
+    segundosTimeoutTanda?: number;
+  }): Promise<{ total: number; cerrados: number; foliosFallidos: string[] }> {
+    const items = opciones.items ?? [];
+    const total = items.length;
+    // Por defecto 1 folio por tanda: el back actual responde por TODA la tanda
+    // (true/403), así que enviando de a 1 se puede aislar cuál cerró y cuál no.
+    const tam = opciones.tamanoTanda ?? 1;
+    const base = opciones.mensaje ?? 'Cerrando pendientes…';
+    const segundos = opciones.segundosTimeoutTanda ?? 30;
+
+    const loading = await this.loadingCtrl.create({
+      spinner: 'circles',
+      backdropDismiss: false,
+      message: this.mensajeProgreso(base, 0, total),
+    });
+    await loading.present();
+
+    let cerrados = 0;
+    const foliosFallidos: string[] = [];
+
+    const tandas: any[][] = [];
+    for (let i = 0; i < items.length; i += tam) {
+      tandas.push(items.slice(i, i + tam));
+    }
+
+    for (const tanda of tandas) {
+      let current: any = undefined;
+      let huboRespuesta = false;
+      try {
+        const body = await this.observableAPromesa(
+          opciones.enviarTanda(tanda).pipe(timeout(segundos * 1000), take(1)),
+        );
+        huboRespuesta = body != null;
+        current = body?.current;
+      } catch (e) {
+        // Falla de red/timeout, o error del servidor (ej. NPE → 403): la tanda
+        // no se confirmó; sus folios quedan como fallidos para reintentar.
+        huboRespuesta = false;
+      }
+
+      if (Array.isArray(current)) {
+        // Back con Fase 1: detalle por folio [{folioEvento, ok}].
+        const okPorFolio: { [folio: string]: boolean } = {};
+        for (const r of current) {
+          if (r && r.folioEvento) {
+            okPorFolio[r.folioEvento] = !!r.ok;
+          }
+        }
+        for (const item of tanda) {
+          const folio = opciones.folioDe(item);
+          if (okPorFolio[folio]) {
+            cerrados++;
+          } else {
+            foliosFallidos.push(folio);
+          }
+        }
+      } else {
+        // Back actual (sin Fase 1): la respuesta aplica a TODA la tanda. Como se
+        // envía de a 1 folio, "hubo respuesta OK" = ese folio cerró.
+        const tandaOk = huboRespuesta && current !== false;
+        for (const item of tanda) {
+          const folio = opciones.folioDe(item);
+          if (tandaOk) {
+            cerrados++;
+          } else {
+            foliosFallidos.push(folio);
+          }
+        }
+      }
+
+      const procesados = cerrados + foliosFallidos.length;
+      loading.message = this.mensajeProgreso(base, procesados, total);
+    }
+
+    try {
+      await loading.dismiss();
+    } catch (e) {
+      /* ya cerrado */
+    }
+
+    return { total, cerrados, foliosFallidos };
+  }
+
+  /** Convierte un Observable de una sola emisión en Promise (sin depender de toPromise). */
+  private observableAPromesa<T>(obs: Observable<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      obs.subscribe({
+        next: (v) => resolve(v),
+        error: (e) => reject(e),
+      });
+    });
+  }
+
+  /** Mensaje del overlay con el avance de tandas. */
+  private mensajeProgreso(base: string, hechos: number, total: number): string {
+    return `${base}<br><strong>${hechos} de ${total}</strong><br><small>Si el sistema está saturado puede tardar.</small>`;
+  }
+
+  /**
    * Ante un error/timeout, consulta si la operación sí se completó en el
    * servidor. Si fue así, la trata como éxito; si no, muestra el error.
    */
@@ -162,6 +278,48 @@ export class ComunService {
           this.mostrarError(error, opciones);
         },
       });
+  }
+
+  /**
+   * Aviso de cierre PARCIAL: algunos folios se cerraron y otros no. Los que
+   * fallaron ya quedaron aislados para reintentar solo esos. El usuario decide
+   * reintentar los faltantes o continuar (los cerrados ya están guardados).
+   */
+  async mostrarCierreParcial(
+    cerrados: number,
+    total: number,
+    onReintentar: () => void,
+    onCerrar: () => void,
+  ): Promise<void> {
+    const faltantes = total - cerrados;
+    const toast = await this.toastCtrl.create({
+      message: `Se cerraron ${cerrados} de ${total}. Faltan ${faltantes}.`,
+      duration: 3000,
+      color: 'warning',
+      position: 'bottom',
+    });
+    await toast.present();
+
+    const alerta = await this.alertCtrl.create({
+      header: 'Cierre parcial',
+      message:
+        `Se cerraron ${cerrados} de ${total} pendientes. ` +
+        `Faltan ${faltantes} por enviar (el servidor está saturado). ` +
+        'Los ya cerrados quedaron guardados; puedes reintentar solo los faltantes.',
+      backdropDismiss: false,
+      buttons: [
+        {
+          text: 'Continuar',
+          role: 'cancel',
+          handler: () => onCerrar(),
+        },
+        {
+          text: 'Reintentar faltantes',
+          handler: () => onReintentar(),
+        },
+      ],
+    });
+    await alerta.present();
   }
 
   /** Toast breve + alerta con opciones Reintentar / Mostrar log / Cerrar. */

@@ -16,8 +16,8 @@ export class AccesoGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean | UrlTree {
-    // TOKEN DESACTIVADO PARA PRODUCCIÓN: se permite el acceso sin código de
-    // activación para que los usuarios puedan entrar sin problemas.
+    // TOKEN DESACTIVADO: se permite el acceso sin código de activación para que
+    // los usuarios puedan entrar sin problemas.
     // Para RE-ACTIVAR el sistema de token, elimina este `return true;` y
     // descomenta el bloque de abajo.
     return true;
