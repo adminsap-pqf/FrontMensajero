@@ -21,6 +21,9 @@
         <ion-input
           [(ngModel)]="user"
           type="text"
+          autocapitalize="off"
+          autocorrect="off"
+          [spellcheck]="false"
           placeholder="Usuario"
           style="text-align: center"
         ></ion-input>
@@ -34,19 +37,51 @@
         <ion-input
           (keydown.enter)="doLogin()"
           [(ngModel)]="password"
-          type="password"
+          [type]="verPassword ? 'text' : 'password'"
+          autocapitalize="off"
+          autocorrect="off"
+          [spellcheck]="false"
           placeholder="Contraseña"
           style="text-align: center"
         ></ion-input>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="medium"
+          (click)="verPassword = !verPassword"
+          [attr.aria-label]="verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]="verPassword ? 'eye-off-outline' : 'eye-outline'"
+          ></ion-icon>
+        </ion-button>
       </ion-item>
     </ion-col>
   </ion-row>
 
   <ion-row style="height: 36px; margin-top: 80px">
     <ion-col style="display: flex; justify-content: center">
-      <ion-button color="primary" expand="block" style="font-size: 18px; text-transform: uppercase; font-weight: 700; width: 162px; height: 36px;" (click)="doLogin()">
+      <ion-button color="primary" expand="block" style="font-size: 18px; text-transform: uppercase; font-weight: 700; width: 162px; height: 36px;" [disabled]="enviando" (click)="doLogin()">
         Entrar
       </ion-button>
     </ion-col>
   </ion-row>
+
+  <div class="estado-conexion" (click)="revisarConexion()">
+    <div class="estado-linea">
+      <ion-icon name="phone-portrait-outline"></ion-icon>
+      <span>Tu internet:</span>
+      <ion-text [color]="colorDispositivo"><strong>{{ textoDispositivo }}</strong></ion-text>
+    </div>
+    <div class="estado-linea">
+      <ion-icon name="server-outline"></ion-icon>
+      <span>Servidor:</span>
+      <ion-text [color]="colorServidor"><strong>{{ textoServidor }}</strong></ion-text>
+    </div>
+    <div class="estado-ayuda">
+      <ion-spinner *ngIf="verificando" name="dots"></ion-spinner>
+      <span *ngIf="!verificando">Toca para volver a revisar</span>
+    </div>
+  </div>
 </ion-content>

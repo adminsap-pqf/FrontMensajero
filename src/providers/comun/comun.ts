@@ -10,6 +10,11 @@ import {
 import { Network } from '@capacitor/network';
 import { URL } from '../config/config.services'; // Trae las IPs
 
+export interface EstadoConexion {
+  dispositivo: { conectado: boolean; tipo: string };
+  servidor: { estado: 'bueno' | 'lento' | 'sin-respuesta'; ms: number | null };
+}
+
 /**
  * Configuración para ejecutar una petición con indicador de carga,
  * contador regresivo, timeout y manejo de error reintentable.
@@ -428,6 +433,7 @@ export class ComunService {
     });
 
     return this.http.post<any>(this.apiURL, user, { headers }).pipe(
+      timeout(30000),
       map((response) => {
         console.log('Login response:', response);
         this.setUsuario(response?.current);
@@ -435,9 +441,49 @@ export class ComunService {
       }),
       catchError((error) => {
         console.error('Login error:', error);
-        return throwError(() => new Error(error.message || 'Server error'));
+        return throwError(() => error);
       }),
     );
+  }
+
+  async verificarConexion(): Promise<EstadoConexion> {
+    let dispositivo: EstadoConexion['dispositivo'] = {
+      conectado: navigator.onLine,
+      tipo: 'unknown',
+    };
+    try {
+      const status = await Network.getStatus();
+      dispositivo = {
+        conectado: status.connected,
+        tipo: status.connectionType,
+      };
+    } catch (e) {
+    }
+
+    if (!dispositivo.conectado) {
+      return { dispositivo, servidor: { estado: 'sin-respuesta', ms: null } };
+    }
+
+    const inicio = Date.now();
+    const controller = new AbortController();
+    const limite = setTimeout(() => controller.abort(), 8000);
+    try {
+      await fetch(URL, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      const ms = Date.now() - inicio;
+      return {
+        dispositivo,
+        servidor: { estado: ms <= 2000 ? 'bueno' : 'lento', ms },
+      };
+    } catch (e) {
+      return { dispositivo, servidor: { estado: 'sin-respuesta', ms: null } };
+    } finally {
+      clearTimeout(limite);
+    }
   }
 
   // Métodos para gestionar datos de usuario
