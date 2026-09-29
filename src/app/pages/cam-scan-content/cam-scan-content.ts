@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ComunService } from '../../../providers/comun/comun';
 import { PendientesProvider } from '../../../providers/pendientes/pendientes';
+import {
+  EstadoEvidencia,
+  EvidenciasService,
+} from '../../../providers/evidencias/evidencias';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
@@ -19,10 +24,10 @@ export class CamScanContentPage {
   pendientes: any[] = [];
   pendientes2: any[] = [];
   openbottom: boolean = false;
-  Documentos: any[] = [];
   ruta: any[] = ['', ''];
-  Img64: string = '';
   codigoValido: any[] = [];
+  estadoEvidencia: (EstadoEvidencia | null)[] = [];
+  private resumenSubscription: Subscription | null = null;
   entregaRevision: any[] = [];
   realizados: any[] = [];
   noRealizados: any[] = [];
@@ -33,6 +38,7 @@ export class CamScanContentPage {
     private navCtrl: NavController,
     private route: ActivatedRoute,
     private _pendientes: PendientesProvider,
+    private _evidencias: EvidenciasService,
   ) {
     this.route.queryParams.subscribe((params: any) => {
       this.listo = params?.listo || false;
@@ -51,6 +57,59 @@ export class CamScanContentPage {
       this.codigoValido[idx] = true;
       this._login.evidenciaSubidaIndex = null;
     }
+
+    this.resumenSubscription?.unsubscribe();
+    this.resumenSubscription = this._evidencias.resumen$.subscribe(() =>
+      this.sincronizarConCola(),
+    );
+  }
+
+  ionViewWillLeave(): void {
+    this.resumenSubscription?.unsubscribe();
+    this.resumenSubscription = null;
+  }
+
+  private sincronizarConCola(): void {
+    const porFolio = this._evidencias.ultimoPorFolio();
+    const vigencia = Date.now() - 12 * 60 * 60 * 1000;
+    this.realizados.forEach((item: any, i: number) => {
+      const candidato = porFolio[item.folioEvento];
+      const trabajo =
+        candidato &&
+        (candidato.estado !== 'COMPLETADO' || candidato.creado > vigencia)
+          ? candidato
+          : null;
+      this.estadoEvidencia[i] = trabajo ? trabajo.estado : null;
+      if (trabajo) {
+        this.codigoValido[i] = true;
+      }
+    });
+  }
+
+  textoEstado(estado: EstadoEvidencia | null): string {
+    switch (estado) {
+      case 'PENDIENTE':
+      case 'SUBIENDO':
+        return 'Enviando…';
+      case 'ENVIADO':
+        return 'Procesando…';
+      case 'COMPLETADO':
+        return 'Enviada';
+      case 'ERROR':
+        return 'Error · tocar para reintentar';
+      default:
+        return '';
+    }
+  }
+
+  tocarFila(index: number, item: any): void {
+    if (this.estadoEvidencia[index] === 'ERROR') {
+      this._evidencias.reintentarErrores();
+      return;
+    }
+    if (!this.codigoValido[index]) {
+      this.openCamera(index, item.folioEvento);
+    }
   }
 
   esconder(): void {
@@ -60,27 +119,23 @@ export class CamScanContentPage {
   async openCamera(index: number, pendiente: any): Promise<void> {
     try {
       const image = await Camera.getPhoto({
-        quality: 50,
-        resultType: CameraResultType.Base64,
+        quality: 45,
+        width: 1280,
+        height: 1600,
+        correctOrientation: true,
+        resultType: CameraResultType.Uri,
         source: CameraSource.Camera,
       });
 
-      this.Img64 = `data:image/jpeg;base64,${image.base64String}`;
-      const obj = {
-        ruta: this.Img64,
-        idimg: `img${this.Documentos.length}`,
-        iddiv: `div${this.Documentos.length}`,
-      };
+      const foto = await this._evidencias.guardarFoto(image);
 
-      console.log('Foto -> ', obj);
-      console.log(this.realizados[0]?.acturaORemision);
       // Navegar a la página de EscannDocs. La fila ya NO se marca aquí: se
       // marca en ionViewWillEnter cuando la subida se confirma (antes se
       // marcaba al tomar la foto, aunque la subida fallara, y la cámara
       // desaparecía sin haber evidencia real).
       this.navCtrl.navigateForward(['tabs/en-cierre/escann-docs'], {
         queryParams: {
-          documentos: JSON.stringify(obj),
+          foto: JSON.stringify(foto),
           pendiente: JSON.stringify(pendiente),
           evento: this.realizados[0]?.evento,
           i: index,

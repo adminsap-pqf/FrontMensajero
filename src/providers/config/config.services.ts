@@ -14,6 +14,8 @@ export const URL = "https://pqnetangular.ryndem.mx/ProquifaNet/"; // PRODUCCION
 //export const URL ='http://172.24.20.12:8080/ProquifaNet/'
 //export const URL = 'http://www.proquifaconnect.mx:8080/ProquifaNet/';
 
+export const EVIDENCIA_PROTOCOLO: 'legacy' | 'v2' = 'legacy';
+
 /**
  * Secreto compartido para firmar/validar los códigos de acceso (HMAC-SHA256).
  *

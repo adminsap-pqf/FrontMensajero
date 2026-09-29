@@ -64,8 +64,10 @@ export class ComunService {
 
   /**
    * Índice del folio cuya evidencia se subió con éxito en escann-docs.
+   * Índice del folio cuya evidencia quedó guardada en la cola en escann-docs.
    * cam-scan-content lo lee al regresar (ionViewWillEnter) para marcar la
    * fila como completada SOLO cuando la subida realmente terminó.
+   * fila; la subida al servidor sigue en segundo plano (EvidenciasService).
    */
   evidenciaSubidaIndex: number | null = null;
 

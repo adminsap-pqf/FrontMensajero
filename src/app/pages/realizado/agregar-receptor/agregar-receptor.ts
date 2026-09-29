@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { PendientesProvider } from '../../../../providers/pendientes/pendientes';
 import { ComunService } from '../../../../providers/comun/comun';
@@ -26,6 +26,7 @@ export class AgregarReceptorPage {
     private route: ActivatedRoute,
     private _pendientes: PendientesProvider,
     private _login: ComunService,
+    private toastCtrl: ToastController,
   ) {
     this.queryParamsSubscripcion = this.route.queryParams.subscribe({
       next: (params) => {
@@ -60,8 +61,18 @@ export class AgregarReceptorPage {
       this._login.ejecutarConCarga({
         mensaje: 'Guardando receptor…',
         crearPeticion: () => this._pendientes.actualizarCliente(personal),
-        onSuccess: () => {
+        onSuccess: async (data: any) => {
           this.guardando = false;
+          if (data?.current !== true) {
+            const toast = await this.toastCtrl.create({
+              message: 'No se pudo guardar el receptor. Intenta de nuevo.',
+              duration: 3500,
+              color: 'danger',
+              position: 'bottom',
+            });
+            await toast.present();
+            return;
+          }
           this.navCtrl.pop();
         },
         onError: () => {

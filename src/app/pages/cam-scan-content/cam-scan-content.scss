@@ -234,3 +234,19 @@
   font-weight: bold !important;
   color: #25ae18 !important;
 }
+
+.estado-evidencia {
+  font-size: 11px;
+  color: #8a8a8a;
+  margin-right: 8px;
+  text-align: right;
+
+  &.ok {
+    color: #008894;
+  }
+
+  &.error {
+    color: #d32f2f;
+    font-weight: 600;
+  }
+}

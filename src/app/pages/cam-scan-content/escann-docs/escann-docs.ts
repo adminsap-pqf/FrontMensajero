@@ -1,7 +1,10 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { ComunService } from '../../../../providers/comun/comun';
-import { PendientesProvider } from '../../../../providers/pendientes/pendientes';
-import { NavController } from '@ionic/angular';
+import {
+  EvidenciasService,
+  FotoLocal,
+} from '../../../../providers/evidencias/evidencias';
+import { NavController, ToastController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -12,60 +15,47 @@ import { Subscription } from 'rxjs';
   styleUrls: ['escann-docs.scss'],
 })
 export class EscannDocsPage {
-  @ViewChild('Html2Pdf') Html2Pdf: any;
-  Documentos: any[] = [];
-  Img64: string = '';
+  Documentos: FotoLocal[] = [];
   conforme = true;
-  doc: any;
   entregaRevision = false;
   facturaORemision: boolean = false;
-  img: any;
   index: number = 0;
-  nombreArchivo: string = '';
   pendiente: any;
   pendientesSubscription: Subscription | null = null;
   recibeEyR: boolean = false;
-  ruta: any[] = ['', ''];
-  titulo: string = '';
   totalFotos: number = 0;
-  subiendo: boolean = false;
+  guardando: boolean = false;
+  private encolada = false;
   usuario = this._login.getUsuario();
 
   constructor(
     private _login: ComunService,
-    private _pendientes: PendientesProvider,
+    private _evidencias: EvidenciasService,
     private navCtrl: NavController,
     private route: ActivatedRoute,
+    private toastCtrl: ToastController,
   ) {
     this.pendientesSubscription = this.route.queryParams.subscribe((params) => {
-      this.doc = JSON.parse(params['documentos']);
       this.pendiente = JSON.parse(params['pendiente']);
-      this.nombreArchivo = 'ARCHIVO-' + this.pendiente;
       this.index = JSON.parse(params['i']);
-      this.recibeEyR = JSON.parse(params['recibeEyR']);
-      this.facturaORemision = JSON.parse(params['facturaORemision']);
-      this.Documentos.push(this.doc);
+      this.recibeEyR = JSON.parse(params['recibeEyR'] ?? 'false');
+      this.facturaORemision = JSON.parse(params['facturaORemision'] ?? 'false');
+      this.Documentos = [JSON.parse(params['foto'])];
       this.totalFotos = this.Documentos.length;
     });
   }
 
-  ionViewWillEnter() {}
-
   async openCamera() {
     try {
       const image = await Camera.getPhoto({
-        quality: 50,
-        resultType: CameraResultType.DataUrl, // Base64
+        quality: 45,
+        width: 1280,
+        height: 1600,
+        correctOrientation: true,
+        resultType: CameraResultType.Uri,
         source: CameraSource.Camera,
       });
-
-      this.Img64 = image.dataUrl!;
-      const obj = {
-        ruta: this.Img64,
-        idimg: 'img' + this.Documentos.length,
-        iddiv: 'div' + this.Documentos.length,
-      };
-      this.Documentos.push(obj);
+      this.Documentos.push(await this._evidencias.guardarFoto(image));
       this.totalFotos = this.Documentos.length;
     } catch (err) {
       console.error('Error en la cámara:', err);
@@ -81,46 +71,51 @@ export class EscannDocsPage {
 
   // Eliminar una foto
   borrar(i: number) {
-    this.Documentos.splice(i, 1);
+    const [foto] = this.Documentos.splice(i, 1);
+    this._evidencias.descartarFotos([foto]);
     this.totalFotos = this.Documentos.length;
   }
 
   // Subir evidencia con UN solo botón. El indicador de carga dura lo que dure
   // la subida real y el botón se bloquea para evitar toques dobles.
-  pdf() {
-    if (this.subiendo || this.Documentos.length === 0) {
+  async guardarEvidencia() {
+    if (this.guardando || this.Documentos.length === 0) {
       return;
     }
-    this.subiendo = true;
-    this.open();
-  }
+    this.guardando = true;
+    try {
+      await this._evidencias.encolar({
+        folioEvento: this.pendiente,
+        valor: `${this.usuario.idEmpleado}/${this.pendiente}`,
+        fotos: this.Documentos,
+      });
+      this.encolada = true;
+      this._login.evidenciaSubidaIndex = this.index;
 
-  open() {
-    const content = this.Documentos.map((data) => data.ruta);
-    const imagenes = content.map((ruta) => ruta.split(',')[1]);
-
-    this._login.ejecutarConCarga({
-      mensaje: 'Subiendo evidencia…',
       //TIEMPO DE CARGA
-      segundosTimeout: 120,
-      crearPeticion: () =>
-        this._pendientes.guardaDocumentacionFotos(
-          imagenes,
-          [this.pendiente],
-          `${this.usuario.idEmpleado}/${this.pendiente}`,
-        ),
-      onSuccess: () => {
-        this.subiendo = false;
         // Avisa a cam-scan-content que ESTE folio ya tiene evidencia subida,
         // para que marque la fila solo con la confirmación del servidor.
-        this._login.evidenciaSubidaIndex = this.index;
-        this.navCtrl.pop(); // Regresa a la página anterior
-      },
-      onError: () => {
         // Se mantiene en la pantalla para reintentar sin perder las fotos.
-        this.subiendo = false;
-      },
-    });
+      const toast = await this.toastCtrl.create({
+        message: 'Evidencia guardada. Se enviará en segundo plano.',
+        duration: 2500,
+        color: 'success',
+        position: 'bottom',
+      });
+      await toast.present();
+      this.navCtrl.pop();
+    } catch (e) {
+      console.error('No se pudo guardar la evidencia', e);
+      this.guardando = false;
+      const toast = await this.toastCtrl.create({
+        message:
+          'No se pudo guardar la evidencia en el teléfono. Revisa el espacio disponible e intenta de nuevo.',
+        duration: 4000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+    }
   }
 
   selectEntrega() {
@@ -132,7 +127,11 @@ export class EscannDocsPage {
     this.conforme = false;
     this.entregaRevision = true;
   }
+
   ionViewWillLeave() {
     this.pendientesSubscription?.unsubscribe();
+    if (!this.encolada) {
+      this._evidencias.descartarFotos(this.Documentos);
+    }
   }
 }

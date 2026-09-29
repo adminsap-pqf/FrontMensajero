@@ -179,6 +179,10 @@ export class RealizadoPage {
         this._pendientes
             .actualizarCliente([receptor])
             .subscribe((data: any) => {
+                if (data?.current !== true) {
+                    receptor.borrar = false;
+                    return;
+                }
                 const idx = this.receptoresList.indexOf(receptor);
                 if (idx > -1) {
                     this.receptoresList.splice(idx, 1);

@@ -17,7 +17,6 @@ export class PendientesProvider {
   private guardarComentariosRutaDP: string = `${URL}guardarComentariosRutaDP`;
   private listarPendientesCerradosPL: string = `${URL}listarPendientesCerradosPL`;
   private apiURLguardarArchivo: string = `${URL}guardarFirma`;
-  private apiURLguardarFotos: string = `${URL}guardarFotos`;
   private apiURLvalidarCoordenadasGPS: string = `${URL}validarCoordenadasGPS`;
   private apiURLInsertarRecorrido: string = `${URL}insertarRecorrido`;
   private x: string = `${URL}upload`;
@@ -132,25 +131,6 @@ export class PendientesProvider {
       .post(this.apiURLguardarArchivo, archivo, {
         headers: this.createHeaders(),
       })
-      .pipe(
-        map((data) => data),
-        catchError(this.handleError),
-      );
-  }
-
-  guardaDocumentacionFotos(
-    imagenes: any,
-    pendiente: any,
-    path: any,
-  ): Observable<any> {
-    const body = {
-      archivos: pendiente,
-      fotos: imagenes,
-      valor: path,
-      tipo: 'RT',
-    };
-    return this.http
-      .post(this.apiURLguardarFotos, body, { headers: this.createHeaders() })
       .pipe(
         map((data) => data),
         catchError(this.handleError),

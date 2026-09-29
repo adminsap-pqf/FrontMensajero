@@ -31,8 +31,8 @@
       <div class="editable" (click)="borrar(i)">
         <ion-icon md="remove-outline"></ion-icon>
       </div>
-      <div [id]="img.iddiv" style="background: transparent">
-        <img [id]="img.idimg" width="260px;" [src]="img.ruta" />
+      <div style="background: transparent">
+        <img width="260px;" [src]="img.src" />
       </div>
     </div>
   </div>
@@ -109,10 +109,10 @@
       expand="full"
       class="btnAccept"
       strong="true"
-      [disabled]="subiendo || totalFotos === 0"
-      (click)="pdf()"
+      [disabled]="guardando || totalFotos === 0"
+      (click)="guardarEvidencia()"
     >
-      Aceptar y subir
+      Aceptar
     </ion-button>
   </div>
 </ion-content>

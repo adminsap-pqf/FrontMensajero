@@ -2,6 +2,17 @@
   <ion-router-outlet></ion-router-outlet>
 </ion-content>
 
+<div
+  class="cola-evidencias"
+  *ngIf="resumen.pendientes > 0 || resumen.errores > 0"
+  [class.error]="resumen.errores > 0"
+  (click)="verEvidencias()"
+>
+  <ion-spinner *ngIf="resumen.errores === 0" name="crescent"></ion-spinner>
+  <ion-icon *ngIf="resumen.errores > 0" name="alert-circle-outline"></ion-icon>
+  <span>{{ textoResumen() }}</span>
+</div>
+
 <ion-tab-bar slot="bottom" [mode]="'footer'">
   <ion-tab-button
     class="tab-button"

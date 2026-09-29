@@ -11,3 +11,28 @@
     color: #d32f2f;
   }
 }
+
+.cola-evidencias {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #ffffff;
+  background: #008894;
+
+  ion-spinner {
+    width: 16px;
+    height: 16px;
+    color: #ffffff;
+  }
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &.error {
+    background: #d32f2f;
+  }
+}

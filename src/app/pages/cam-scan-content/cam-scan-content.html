@@ -12,15 +12,19 @@
   <div class="todo">
     <div class="contenido">
       <div *ngFor="let item of realizados; let i =index" class="content">
-        <div
-          class="unos"
-          (click)="!codigoValido[i]?openCamera(i, item.folioEvento):''"
-        >
+        <div class="unos" (click)="tocarFila(i, item)">
           <label *ngIf="item.evento != 'Entrega'">
             <span># {{ i+1 }} ·</span> {{ item.folioEvento}}</label
           >
           <label *ngIf="item.evento == 'Entrega'">
             <span># {{ i+1 }} ·</span> {{ item.folioDocumento}}</label
+          >
+          <span
+            class="estado-evidencia"
+            *ngIf="estadoEvidencia[i]"
+            [class.error]="estadoEvidencia[i] === 'ERROR'"
+            [class.ok]="estadoEvidencia[i] === 'COMPLETADO'"
+            >{{ textoEstado(estadoEvidencia[i]) }}</span
           >
           <div class="imagen" *ngIf="codigoValido[i]">
             <img src="assets/img/imgs2/picture.svg" />
