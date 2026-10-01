@@ -34,6 +34,7 @@
   <ion-row>
     <ion-col>
       <ion-item>
+        <div slot="start" class="espacio-ojo" aria-hidden="true"></div>
         <ion-input
           (keydown.enter)="doLogin()"
           [(ngModel)]="password"
@@ -46,6 +47,7 @@
         ></ion-input>
         <ion-button
           slot="end"
+          class="boton-ojo"
           fill="clear"
           color="medium"
           (click)="verPassword = !verPassword"
